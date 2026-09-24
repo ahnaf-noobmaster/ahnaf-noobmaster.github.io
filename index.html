@@ -366,11 +366,14 @@ const FLAGSHIP = {
 "Gout":{overview:"Gout is a form of arthritis caused by a buildup of uric acid crystals in the joints, often causing sudden, severe pain, commonly in the big toe.",symptoms:["Sudden, severe joint pain, often in the big toe","Swelling and redness","Warmth in the affected joint","Attacks that can wake you at night"],causesLabel:"Risk Factors",causes:["High intake of red meat, seafood, and alcohol","Obesity","Certain medications","Family history"],preventionLabel:"Prevention",prevention:["Limit alcohol, especially beer","Reduce intake of red meat and organ meats","Stay well hydrated","Maintain a healthy weight"],doctor:"See a doctor for sudden, severe joint pain and swelling — gout is very treatable, and recurring attacks can be prevented with medication and diet changes."}
 };
 
-// Condensed Hindi / Bangla translations for a subset of flagship topics
+// Per-topic videos. type:'iframe' = hosted embed (Synthesia/HeyGen share link).
+// type:'file' = local mp4 shipped alongside this page (src is a relative path).
 const VIDEOS = {
-  "Common Cold": "https://share.synthesia.io/embeds/videos/b6d1493d-f6d0-4efa-bc47-6d1cd34f18c4"
+  "Common Cold": {type:'iframe', src:'https://share.synthesia.io/embeds/videos/b6d1493d-f6d0-4efa-bc47-6d1cd34f18c4'},
+  "Dengue Fever": {type:'file', src:'videos/dengue-fever.mp4'}
 };
 
+// Condensed Hindi / Bangla translations for a subset of flagship topics
 const TRANSLATIONS = {
 "Common Cold":{hi:{overview:"सामान्य सर्दी-जुकाम नाक और गले का एक हल्का वायरल संक्रमण है। ज़्यादातर वयस्क बिना किसी खास इलाज के 7\u201310 दिनों में ठीक हो जाते हैं।",symptoms:["बहती या बंद नाक","गले में खराश","छींक और खांसी","हल्की थकान"],prevention:["साबुन से बार-बार हाथ धोएं","संक्रमित व्यक्ति से दूरी बनाए रखें","खांसते या छींकते समय मुंह ढकें"],doctor:"अगर तेज़ बुखार हो, लक्षण 10 दिनों से ज़्यादा रहें, या सांस लेने में तकलीफ़ हो तो डॉक्टर से मिलें।"},
 bn:{overview:"সাধারণ সর্দি নাক ও গলার একটি হালকা ভাইরাল সংক্রমণ। বেশিরভাগ প্রাপ্তবয়স্ক বিশেষ চিকিৎসা ছাড়াই ৭\u201310 দিনে সেরে ওঠেন।",symptoms:["নাক দিয়ে পানি পড়া বা বন্ধ নাক","গলা ব্যথা","হাঁচি ও কাশি","হালকা ক্লান্তি"],prevention:["সাবান দিয়ে ঘন ঘন হাত ধোয়া","সংক্রমিত ব্যক্তির থেকে দূরত্ব বজায় রাখা","কাশি বা হাঁচির সময় মুখ ঢাকা"],doctor:"তীব্র জ্বর, ১০ দিনের বেশি লক্ষণ থাকলে, বা শ্বাসকষ্ট হলে ডাক্তার দেখান।"}},
@@ -769,16 +772,28 @@ function renderArticle(){
   return wrap;
 }
 
-function videoEmbed(embedUrl){
+function videoEmbed(entry){
   const wrap = el('div','video-embed');
   const inner = el('div','video-embed-inner');
-  const iframe = document.createElement('iframe');
-  iframe.src = embedUrl;
-  iframe.loading = 'lazy';
-  iframe.allow = 'encrypted-media; fullscreen; microphone; screen-wake-lock;';
-  iframe.allowFullscreen = true;
-  iframe.title = 'Video summary';
-  inner.appendChild(iframe);
+
+  if(entry.type === 'file'){
+    const video = document.createElement('video');
+    video.src = entry.src;
+    video.controls = true;
+    video.preload = 'metadata';
+    video.style.position='absolute'; video.style.top='0'; video.style.left='0';
+    video.style.width='100%'; video.style.height='100%'; video.style.background='#000';
+    inner.appendChild(video);
+  } else {
+    const iframe = document.createElement('iframe');
+    iframe.src = entry.src;
+    iframe.loading = 'lazy';
+    iframe.allow = 'encrypted-media; fullscreen; microphone; screen-wake-lock;';
+    iframe.allowFullscreen = true;
+    iframe.title = 'Video summary';
+    inner.appendChild(iframe);
+  }
+
   wrap.appendChild(inner);
   return wrap;
 }
