@@ -226,6 +226,9 @@
     margin:16px 0 22px;padding:12px 14px;border-radius:10px;background:var(--blue-100);
     border:1px solid var(--blue-200);color:var(--blue-900);font-size:12.5px;line-height:1.55;
   }
+  .video-embed{margin:0 0 22px;border-radius:16px;overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow);background:#000;}
+  .video-embed-inner{position:relative;width:100%;aspect-ratio:16/9;}
+  .video-embed-inner iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none;}
   .article-body{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:26px 28px;box-shadow:var(--shadow);}
   .a-block{margin-bottom:22px;}
   .a-block:last-child{margin-bottom:0;}
@@ -364,6 +367,10 @@ const FLAGSHIP = {
 };
 
 // Condensed Hindi / Bangla translations for a subset of flagship topics
+const VIDEOS = {
+  "Common Cold": "https://share.synthesia.io/embeds/videos/b6d1493d-f6d0-4efa-bc47-6d1cd34f18c4"
+};
+
 const TRANSLATIONS = {
 "Common Cold":{hi:{overview:"सामान्य सर्दी-जुकाम नाक और गले का एक हल्का वायरल संक्रमण है। ज़्यादातर वयस्क बिना किसी खास इलाज के 7\u201310 दिनों में ठीक हो जाते हैं।",symptoms:["बहती या बंद नाक","गले में खराश","छींक और खांसी","हल्की थकान"],prevention:["साबुन से बार-बार हाथ धोएं","संक्रमित व्यक्ति से दूरी बनाए रखें","खांसते या छींकते समय मुंह ढकें"],doctor:"अगर तेज़ बुखार हो, लक्षण 10 दिनों से ज़्यादा रहें, या सांस लेने में तकलीफ़ हो तो डॉक्टर से मिलें।"},
 bn:{overview:"সাধারণ সর্দি নাক ও গলার একটি হালকা ভাইরাল সংক্রমণ। বেশিরভাগ প্রাপ্তবয়স্ক বিশেষ চিকিৎসা ছাড়াই ৭\u201310 দিনে সেরে ওঠেন।",symptoms:["নাক দিয়ে পানি পড়া বা বন্ধ নাক","গলা ব্যথা","হাঁচি ও কাশি","হালকা ক্লান্তি"],prevention:["সাবান দিয়ে ঘন ঘন হাত ধোয়া","সংক্রমিত ব্যক্তির থেকে দূরত্ব বজায় রাখা","কাশি বা হাঁচির সময় মুখ ঢাকা"],doctor:"তীব্র জ্বর, ১০ দিনের বেশি লক্ষণ থাকলে, বা শ্বাসকষ্ট হলে ডাক্তার দেখান।"}},
@@ -716,6 +723,10 @@ function renderArticle(){
   const disc = el('div','disclaimer'); disc.textContent = t('disclaimer');
   wrap.appendChild(disc);
 
+  if(VIDEOS[topic.title]){
+    wrap.appendChild(videoEmbed(VIDEOS[topic.title]));
+  }
+
   if(state.editing){
     wrap.appendChild(renderEditBox(topic));
     return wrap;
@@ -755,6 +766,20 @@ function renderArticle(){
 
   wrap.appendChild(articleBody(data));
   wrap.appendChild(sourcesBox(cat));
+  return wrap;
+}
+
+function videoEmbed(embedUrl){
+  const wrap = el('div','video-embed');
+  const inner = el('div','video-embed-inner');
+  const iframe = document.createElement('iframe');
+  iframe.src = embedUrl;
+  iframe.loading = 'lazy';
+  iframe.allow = 'encrypted-media; fullscreen; microphone; screen-wake-lock;';
+  iframe.allowFullscreen = true;
+  iframe.title = 'Video summary';
+  inner.appendChild(iframe);
+  wrap.appendChild(inner);
   return wrap;
 }
 
