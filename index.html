@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health Portal — Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --white:#ffffff;
+    --bg:#F4F8FB;
+    --blue-900:#0B3B66;
+    --blue-800:#0F4C81;
+    --blue-700:#155A9C;
+    --blue-500:#2E7BC4;
+    --blue-200:#BFDBF5;
+    --blue-100:#E7F1FB;
+    --green-800:#155C3B;
+    --green-700:#1D7A4C;
+    --green-500:#2FA968;
+    --green-200:#BCE7D0;
+    --green-100:#E6F7ED;
+    --amber-600:#B4740E;
+    --amber-100:#FBF0DC;
+    --ink:#132436;
+    --muted:#5B7186;
+    --border:#DCE6EE;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(11,59,102,.06), 0 8px 24px rgba(11,59,102,.06);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Source Sans 3',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  h1,h2,h3,.serif{font-family:'Source Serif 4',Georgia,serif;}
+  button{font-family:inherit;cursor:pointer;}
+  a{color:inherit;}
+  ::selection{background:var(--blue-200);}
+  :focus-visible{outline:2px solid var(--blue-700);outline-offset:2px;}
+
+  /* ---------- Layout shells ---------- */
+  #app{min-height:100vh;}
+  .hidden{display:none !important;}
+
+  /* ---------- Login ---------- */
+  .login-wrap{
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:24px;position:relative;overflow:hidden;
+  }
+  .login-wrap::before{
+    content:'';position:absolute;inset:0;
+    background:
+      radial-gradient(600px 300px at 15% -10%, var(--blue-100), transparent),
+      radial-gradient(600px 320px at 110% 10%, var(--green-100), transparent);
+    z-index:0;
+  }
+  .login-topbar{position:relative;z-index:1;width:100%;max-width:960px;display:flex;justify-content:space-between;align-items:center;margin-bottom:36px;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--green-500);box-shadow:0 0 0 4px var(--green-100);}
+  .brand-name{font-family:'Source Serif 4',serif;font-weight:600;font-size:20px;color:var(--blue-900);letter-spacing:.2px;}
+  .lang-pills{display:flex;gap:6px;background:var(--white);border:1px solid var(--border);border-radius:999px;padding:3px;box-shadow:var(--shadow);}
+  .lang-pill{border:none;background:transparent;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600;color:var(--muted);}
+  .lang-pill.active{background:var(--blue-800);color:#fff;}
+
+  .login-card{
+    position:relative;z-index:1;background:var(--white);border:1px solid var(--border);
+    border-radius:20px;box-shadow:var(--shadow);padding:40px 36px;width:100%;max-width:420px;
+  }
+  .login-card h1{margin:0 0 6px;font-size:26px;color:var(--blue-900);}
+  .login-sub{color:var(--muted);font-size:14.5px;margin:0 0 26px;line-height:1.5;}
+  .tabrow{display:flex;background:var(--bg);border-radius:10px;padding:4px;margin-bottom:22px;}
+  .tabbtn{flex:1;border:none;background:transparent;padding:9px 0;border-radius:8px;font-weight:600;font-size:13.5px;color:var(--muted);}
+  .tabbtn.active{background:var(--white);color:var(--blue-800);box-shadow:0 1px 3px rgba(11,59,102,.15);}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--blue-900);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;}
+  .field input{
+    width:100%;padding:11px 13px;border-radius:10px;border:1.5px solid var(--border);
+    font-size:14.5px;background:var(--bg);color:var(--ink);
+  }
+  .field input:focus{border-color:var(--blue-500);background:var(--white);}
+  .btn-primary{
+    width:100%;background:var(--blue-800);color:#fff;border:none;border-radius:10px;
+    padding:12px 0;font-weight:700;font-size:14.5px;margin-top:6px;
+    box-shadow:0 6px 16px rgba(11,76,129,.25);
+  }
+  .btn-primary:hover{background:var(--blue-700);}
+  .btn-ghost{
+    width:100%;background:transparent;color:var(--blue-800);border:1.5px solid var(--border);
+    border-radius:10px;padding:11px 0;font-weight:600;font-size:14px;margin-top:10px;
+  }
+  .btn-ghost:hover{border-color:var(--blue-500);}
+  .login-note{margin-top:18px;font-size:12px;color:var(--muted);text-align:center;line-height:1.5;}
+  .login-note b{color:var(--blue-800);}
+
+  /* ---------- App shell ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:20;background:var(--white);border-bottom:1px solid var(--border);
+    display:flex;align-items:center;gap:16px;padding:12px 20px;
+  }
+  .topbar .brand-name{font-size:18px;}
+  .search-wrap{flex:1;max-width:520px;position:relative;}
+  .search-wrap input{
+    width:100%;padding:10px 14px 10px 36px;border-radius:999px;border:1.5px solid var(--border);
+    background:var(--bg);font-size:14px;
+  }
+  .search-wrap input:focus{background:var(--white);border-color:var(--blue-500);}
+  .search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--muted);}
+  .topbar-right{display:flex;align-items:center;gap:10px;margin-left:auto;}
+  .icon-btn{
+    background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:8px 10px;
+    font-size:13px;font-weight:600;color:var(--blue-900);display:flex;align-items:center;gap:6px;
+  }
+  .icon-btn:hover{border-color:var(--blue-500);}
+  .user-chip{display:flex;align-items:center;gap:8px;background:var(--blue-100);border-radius:999px;padding:5px 12px 5px 5px;}
+  .user-avatar{width:26px;height:26px;border-radius:50%;background:var(--blue-800);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+  .user-name{font-size:13px;font-weight:600;color:var(--blue-900);}
+
+  .shell{display:flex;max-width:1280px;margin:0 auto;}
+  .sidebar{
+    width:250px;flex-shrink:0;padding:22px 14px;border-right:1px solid var(--border);
+    min-height:calc(100vh - 57px);position:sticky;top:57px;align-self:flex-start;
+  }
+  .side-title{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin:6px 10px 10px;}
+  .side-link{
+    display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13.8px;
+    font-weight:600;color:var(--ink);margin-bottom:2px;background:transparent;border:none;width:100%;text-align:left;
+  }
+  .side-link:hover{background:var(--bg);}
+  .side-link.active{background:var(--blue-100);color:var(--blue-900);}
+  .side-link .swatch{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .side-link .count{margin-left:auto;font-size:11.5px;color:var(--muted);font-weight:600;}
+
+  .main{flex:1;min-width:0;padding:28px 32px 60px;}
+
+  /* ---------- Home ---------- */
+  .hero{
+    background:linear-gradient(135deg,var(--blue-900),var(--blue-700));
+    border-radius:20px;padding:34px 34px;color:#fff;margin-bottom:26px;position:relative;overflow:hidden;
+  }
+  .hero::after{
+    content:'';position:absolute;right:-40px;top:-40px;width:220px;height:220px;border-radius:50%;
+    background:radial-gradient(circle,rgba(47,169,104,.35),transparent 70%);
+  }
+  .hero-eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--green-200);font-weight:700;margin-bottom:10px;}
+  .hero h1{font-size:28px;margin:0 0 10px;max-width:640px;line-height:1.25;}
+  .hero p{margin:0 0 20px;color:#DCE9F7;max-width:560px;font-size:14.5px;line-height:1.6;}
+  .coverage{display:flex;gap:26px;flex-wrap:wrap;position:relative;z-index:1;}
+  .coverage-item{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:12px 18px;min-width:140px;}
+  .coverage-item .num{font-family:'Source Serif 4',serif;font-size:24px;font-weight:700;}
+  .coverage-item .lbl{font-size:11.5px;color:#CBDDEF;text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;margin:30px 0 14px;}
+  .section-head h2{font-size:18px;margin:0;color:var(--blue-900);}
+  .section-head .sub{font-size:12.5px;color:var(--muted);}
+
+  .cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;}
+  .cat-card{
+    background:var(--white);border:1px solid var(--border);border-radius:16px;padding:18px;
+    text-align:left;display:flex;gap:14px;align-items:flex-start;box-shadow:var(--shadow);
+  }
+  .cat-card:hover{border-color:var(--blue-500);transform:translateY(-1px);}
+  .cat-title{font-family:'Source Serif 4',serif;font-weight:600;font-size:15.5px;color:var(--blue-900);margin:0 0 3px;}
+  .cat-desc{font-size:12.3px;color:var(--muted);line-height:1.45;margin:0 0 8px;}
+  .cat-meta{font-size:11.5px;color:var(--muted);font-weight:600;}
+  .cat-meta b{color:var(--green-700);}
+
+  /* seal badge */
+  .seal{
+    position:relative;width:46px;height:46px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-family:'Source Serif 4',serif;
+    font-weight:700;font-size:16px;color:#fff;
+  }
+  .seal::before{
+    content:'';position:absolute;inset:-5px;border-radius:50%;border:1px dashed currentColor;opacity:.45;
+  }
+  .seal.blue{background:var(--blue-700);color:var(--blue-700);}
+  .seal.blue span{color:#fff;}
+  .seal.green{background:var(--green-700);color:var(--green-700);}
+  .seal.green span{color:#fff;}
+
+  /* ---------- Topic list ---------- */
+  .crumbs{font-size:12.5px;color:var(--muted);margin-bottom:6px;}
+  .crumbs button{background:none;border:none;color:var(--blue-700);font-weight:600;padding:0;font-size:12.5px;}
+  .page-title{display:flex;align-items:center;gap:14px;margin-bottom:4px;}
+  .page-title h1{font-size:23px;margin:0;color:var(--blue-900);}
+  .page-sub{color:var(--muted);font-size:13.5px;margin:6px 0 20px;max-width:640px;line-height:1.5;}
+
+  .topic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
+  .topic-card{
+    background:var(--white);border:1px solid var(--border);border-radius:13px;padding:15px 16px;
+    text-align:left;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px;min-height:100px;
+  }
+  .topic-card:hover{border-color:var(--blue-500);}
+  .topic-card .t-title{font-weight:600;font-size:14px;color:var(--ink);line-height:1.35;}
+  .badge{display:inline-flex;align-items:center;gap:5px;font-size:10.8px;font-weight:700;padding:3px 9px;border-radius:999px;width:fit-content;letter-spacing:.02em;}
+  .badge.reviewed{background:var(--green-100);color:var(--green-800);}
+  .badge.reviewed::before{content:'✓';}
+  .badge.draft{background:var(--amber-100);color:var(--amber-600);border:1px dashed var(--amber-600);}
+  .badge.edited{background:var(--blue-100);color:var(--blue-800);}
+  .t-excerpt{font-size:12px;color:var(--muted);line-height:1.5;flex:1;}
+
+  /* ---------- Article ---------- */
+  .article-wrap{max-width:760px;}
+  .article-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:6px;}
+  .article-title{font-size:26px;margin:0;color:var(--blue-900);line-height:1.25;}
+  .article-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .abtn{
+    background:var(--white);border:1.5px solid var(--border);border-radius:9px;padding:8px 13px;
+    font-size:12.8px;font-weight:600;color:var(--blue-900);display:flex;align-items:center;gap:6px;
+  }
+  .abtn:hover{border-color:var(--blue-500);}
+  .abtn.primary{background:var(--blue-800);color:#fff;border-color:var(--blue-800);}
+  .abtn.primary:hover{background:var(--blue-700);}
+
+  .lang-note{
+    margin:16px 0;padding:11px 14px;border-radius:10px;background:var(--amber-100);
+    border:1px solid #EED9AE;color:#8A5B0B;font-size:12.8px;line-height:1.55;
+  }
+  .disclaimer{
+    margin:16px 0 22px;padding:12px 14px;border-radius:10px;background:var(--blue-100);
+    border:1px solid var(--blue-200);color:var(--blue-900);font-size:12.5px;line-height:1.55;
+  }
+  .article-body{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:26px 28px;box-shadow:var(--shadow);}
+  .a-block{margin-bottom:22px;}
+  .a-block:last-child{margin-bottom:0;}
+  .a-block h3{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--green-700);margin:0 0 10px;font-family:'Source Sans 3';font-weight:700;}
+  .a-block p{margin:0;font-size:15px;line-height:1.7;color:var(--ink);}
+  .a-block ul{margin:0;padding-left:20px;font-size:14.5px;line-height:1.85;color:var(--ink);}
+  .a-block li{margin-bottom:2px;}
+
+  .edit-area{width:100%;min-height:340px;border-radius:12px;border:1.5px solid var(--blue-200);padding:16px;font-size:14.5px;line-height:1.7;font-family:'Source Sans 3';resize:vertical;background:var(--bg);}
+  .edit-actions{display:flex;gap:8px;margin-top:12px;}
+
+  .sources-box{margin-top:18px;background:var(--green-100);border:1px solid var(--green-200);border-radius:14px;padding:18px 20px;}
+  .sources-box h4{margin:0 0 10px;font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--green-800);font-weight:700;}
+  .sources-box ul{margin:0;padding:0;list-style:none;}
+  .sources-box li{font-size:13px;margin-bottom:6px;}
+  .sources-box a{color:var(--blue-800);font-weight:600;text-decoration:none;border-bottom:1px solid var(--blue-200);}
+  .sources-box a:hover{border-color:var(--blue-800);}
+
+  .gen-box{background:var(--white);border:1.5px dashed var(--border);border-radius:16px;padding:34px 28px;text-align:center;}
+  .gen-box p{color:var(--muted);font-size:13.8px;max-width:420px;margin:8px auto 18px;line-height:1.6;}
+
+  @media (max-width:860px){
+    .sidebar{display:none;}
+    .main{padding:20px 16px 50px;}
+    .search-wrap{max-width:none;}
+    .topbar{flex-wrap:wrap;}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ======================= DATA ======================= */
+
+const CATEGORIES = [
+  {id:'infectious', name:{en:'Infectious Diseases',hi:'संक्रामक रोग',bn:'সংক্রামক রোগ'}, desc:{en:'Illnesses spread person to person or by mosquitoes and contaminated food/water.',hi:'व्यक्ति-से-व्यक्ति या मच्छरों और दूषित भोजन/पानी से फैलने वाली बीमारियाँ।',bn:'ব্যক্তি থেকে ব্যক্তি বা মশা এবং দূষিত খাবার/পানির মাধ্যমে ছড়ানো রোগ।'}, color:'blue'},
+  {id:'ncd', name:{en:'Non-Communicable Diseases',hi:'गैर-संक्रामक रोग',bn:'অসংক্রামক রোগ'}, desc:{en:'Long-term conditions such as diabetes, heart disease and hypertension.',hi:'डायबिटीज़, हृदय रोग और उच्च रक्तचाप जैसी दीर्घकालिक स्थितियाँ।',bn:'ডায়াবেটিস, হৃদরোগ ও উচ্চ রক্তচাপের মতো দীর্ঘমেয়াদী অবস্থা।'}, color:'green'},
+  {id:'maternal', name:{en:'Maternal & Child Health',hi:'मातृ एवं शिशु स्वास्थ्य',bn:'মাতৃ ও শিশু স্বাস্থ্য'}, desc:{en:'Pregnancy, delivery, and newborn care guidance.',hi:'गर्भावस्था, प्रसव और नवजात देखभाल संबंधी जानकारी।',bn:'গর্ভাবস্থা, প্রসব ও নবজাতকের যত্ন সংক্রান্ত তথ্য।'}, color:'blue'},
+  {id:'child', name:{en:'Child Health',hi:'बाल स्वास्थ्य',bn:'শিশু স্বাস্থ্য'}, desc:{en:'Common childhood illnesses, growth and vaccination topics.',hi:'सामान्य बचपन की बीमारियाँ, विकास व टीकाकरण विषय।',bn:'সাধারণ শৈশব রোগ, বৃদ্ধি ও টিকাদান বিষয়ক তথ্য।'}, color:'green'},
+  {id:'nutrition', name:{en:'Nutrition',hi:'पोषण',bn:'পুষ্টি'}, desc:{en:'Diet, deficiencies and healthy eating across life stages.',hi:'आहार, कमियाँ और जीवन के हर चरण में स्वस्थ भोजन।',bn:'খাদ্য, অভাবজনিত সমস্যা ও জীবনের সব পর্যায়ে স্বাস্থ্যকর খাদ্যাভ্যাস।'}, color:'blue'},
+  {id:'mental', name:{en:'Mental Health',hi:'मानसिक स्वास्थ्य',bn:'মানসিক স্বাস্থ্য'}, desc:{en:'Emotional wellbeing, common conditions and coping support.',hi:'भावनात्मक स्वास्थ्य, सामान्य स्थितियाँ और सहयोग।',bn:'মানসিক সুস্থতা, সাধারণ সমস্যা ও সহায়তা।'}, color:'green'},
+  {id:'women', name:{en:"Women's Health",hi:'महिला स्वास्थ्य',bn:'নারী স্বাস্থ্য'}, desc:{en:'Reproductive and general health topics for women.',hi:'महिलाओं के लिए प्रजनन व सामान्य स्वास्थ्य विषय।',bn:'নারীদের জন্য প্রজনন ও সাধারণ স্বাস্থ্য বিষয়ক তথ্য।'}, color:'blue'},
+  {id:'men', name:{en:"Men's Health",hi:'पुरुष स्वास्थ्य',bn:'পুরুষ স্বাস্থ্য'}, desc:{en:'Health topics specific to men across the lifespan.',hi:'पुरुषों के जीवन से जुड़े विशेष स्वास्थ्य विषय।',bn:'পুরুষদের জীবনজুড়ে নির্দিষ্ট স্বাস্থ্য বিষয়।'}, color:'green'},
+  {id:'elderly', name:{en:'Elderly Health',hi:'वृद्धावस्था स्वास्थ्य',bn:'বয়স্কদের স্বাস্থ্য'}, desc:{en:'Ageing-related conditions and healthy ageing tips.',hi:'उम्र संबंधी स्थितियाँ और स्वस्थ बुढ़ापे के सुझाव।',bn:'বার্ধক্যজনিত সমস্যা ও সুস্থভাবে বার্ধক্য বরণের পরামর্শ।'}, color:'blue'},
+  {id:'skineye', name:{en:'Skin, Eye & ENT',hi:'त्वचा, आंख व ईएनटी',bn:'ত্বক, চোখ ও ইএনটি'}, desc:{en:'Common skin, eye, ear, nose and throat conditions.',hi:'सामान्य त्वचा, आंख, कान, नाक व गले की समस्याएँ।',bn:'সাধারণ ত্বক, চোখ, কান, নাক ও গলার সমস্যা।'}, color:'green'},
+  {id:'firstaid', name:{en:'First Aid & Emergency',hi:'प्राथमिक उपचार व आपातकाल',bn:'প্রাথমিক চিকিৎসা ও জরুরি অবস্থা'}, desc:{en:'What to do in the first minutes of a medical emergency.',hi:'चिकित्सीय आपातकाल के पहले मिनटों में क्या करें।',bn:'চিকিৎসা জরুরি অবস্থার প্রথম মুহূর্তে করণীয়।'}, color:'blue'},
+  {id:'sexual', name:{en:'Sexual & Reproductive Health',hi:'यौन एवं प्रजनन स्वास्थ्य',bn:'যৌন ও প্রজনন স্বাস্থ্য'}, desc:{en:'Prevention, testing and reproductive wellbeing.',hi:'रोकथाम, जांच और प्रजनन स्वास्थ्य।',bn:'প্রতিরোধ, পরীক্ষা ও প্রজনন সুস্থতা।'}, color:'green'},
+  {id:'occupational', name:{en:'Occupational & Environmental Health',hi:'व्यावसायिक व पर्यावरणीय स्वास्थ्य',bn:'পেশাগত ও পরিবেশগত স্বাস্থ্য'}, desc:{en:'Heat, pollution, water safety and workplace risks.',hi:'गर्मी, प्रदूषण, जल सुरक्षा और कार्यस्थल जोखिम।',bn:'তাপ, দূষণ, পানি নিরাপত্তা ও কর্মক্ষেত্রের ঝুঁকি।'}, color:'blue'},
+  {id:'musculoskeletal', name:{en:'Musculoskeletal & Chronic Pain',hi:'हड्डी-मांसपेशी व दीर्घकालिक दर्द',bn:'হাড়-পেশি ও দীর্ঘমেয়াদী ব্যথা'}, desc:{en:'Back, joint and muscle conditions and pain management.',hi:'पीठ, जोड़ और मांसपेशियों की स्थितियाँ व दर्द प्रबंधन।',bn:'পিঠ, জয়েন্ট ও পেশির সমস্যা এবং ব্যথা নিয়ন্ত্রণ।'}, color:'green'}
+];
+
+const TOPIC_LISTS = {
+  infectious:['Dengue Fever','Malaria','Typhoid Fever','Cholera','Tuberculosis (TB)','COVID-19','Seasonal Influenza','Common Cold','Chikungunya','Hepatitis A','Hepatitis B','Hepatitis C','HIV/AIDS','Rabies','Japanese Encephalitis','Measles','Chickenpox','Mumps','Leptospirosis','Diphtheria','Dengue Fever: Symptoms & Diagnosis','Dengue Fever: Treatment Options','Dengue Fever: Prevention Tips','Living with Dengue Fever','Malaria: Symptoms & Diagnosis','Malaria: Treatment Options','Malaria: Prevention Tips','Living with Malaria','Typhoid Fever: Symptoms & Diagnosis','Typhoid Fever: Treatment Options','Typhoid Fever: Prevention Tips','Living with Typhoid Fever','Cholera: Symptoms & Diagnosis','Cholera: Treatment Options','Cholera: Prevention Tips','Living with Cholera','Tuberculosis (TB): Symptoms & Diagnosis','Tuberculosis (TB): Treatment Options','Tuberculosis (TB): Prevention Tips','Living with Tuberculosis (TB)','COVID-19: Symptoms & Diagnosis','COVID-19: Treatment Options','COVID-19: Prevention Tips','Living with COVID-19','Seasonal Influenza: Symptoms & Diagnosis','Seasonal Influenza: Treatment Options','Seasonal Influenza: Prevention Tips','Living with Seasonal Influenza','Common Cold: Symptoms & Diagnosis','Common Cold: Treatment Options','Common Cold: Prevention Tips','Living with Common Cold','Chikungunya: Symptoms & Diagnosis','Chikungunya: Treatment Options','Chikungunya: Prevention Tips','Living with Chikungunya','Hepatitis A: Symptoms & Diagnosis','Hepatitis A: Treatment Options','Hepatitis A: Prevention Tips','Living with Hepatitis A','Hepatitis B: Symptoms & Diagnosis','Hepatitis B: Treatment Options','Hepatitis B: Prevention Tips','Living with Hepatitis B','Hepatitis C: Symptoms & Diagnosis','Hepatitis C: Treatment Options','Hepatitis C: Prevention Tips','Living with Hepatitis C','HIV/AIDS: Symptoms & Diagnosis','HIV/AIDS: Treatment Options','HIV/AIDS: Prevention Tips','Living with HIV/AIDS','Rabies: Symptoms & Diagnosis','Rabies: Treatment Options','Rabies: Prevention Tips','Living with Rabies','Japanese Encephalitis: Symptoms & Diagnosis','Japanese Encephalitis: Treatment Options','Japanese Encephalitis: Prevention Tips','Living with Japanese Encephalitis','Measles: Symptoms & Diagnosis','Measles: Treatment Options','Measles: Prevention Tips','Living with Measles','Chickenpox: Symptoms & Diagnosis','Chickenpox: Treatment Options','Chickenpox: Prevention Tips','Living with Chickenpox','Mumps: Symptoms & Diagnosis','Mumps: Treatment Options','Mumps: Prevention Tips','Living with Mumps','Leptospirosis: Symptoms & Diagnosis','Leptospirosis: Treatment Options','Leptospirosis: Prevention Tips','Living with Leptospirosis','Diphtheria: Symptoms & Diagnosis','Diphtheria: Treatment Options','Diphtheria: Prevention Tips','Living with Diphtheria'],
+  ncd:['Type 2 Diabetes','Type 1 Diabetes','Hypertension (High Blood Pressure)','Coronary Heart Disease','Stroke','Chronic Obstructive Pulmonary Disease (COPD)','Asthma','Chronic Kidney Disease','Obesity','High Cholesterol','Thyroid Disorders','Fatty Liver Disease','Epilepsy','Migraine','Peptic Ulcer Disease','Gastroesophageal Reflux Disease (GERD)','Gallstones','Kidney Stones','Type 2 Diabetes: Symptoms & Diagnosis','Type 2 Diabetes: Treatment Options','Type 2 Diabetes: Prevention Tips','Living with Type 2 Diabetes','Type 1 Diabetes: Symptoms & Diagnosis','Type 1 Diabetes: Treatment Options','Type 1 Diabetes: Prevention Tips','Living with Type 1 Diabetes','Hypertension (High Blood Pressure): Symptoms & Diagnosis','Hypertension (High Blood Pressure): Treatment Options','Hypertension (High Blood Pressure): Prevention Tips','Living with Hypertension (High Blood Pressure)','Coronary Heart Disease: Symptoms & Diagnosis','Coronary Heart Disease: Treatment Options','Coronary Heart Disease: Prevention Tips','Living with Coronary Heart Disease','Stroke: Symptoms & Diagnosis','Stroke: Treatment Options','Stroke: Prevention Tips','Living with Stroke','Chronic Obstructive Pulmonary Disease (COPD): Symptoms & Diagnosis','Chronic Obstructive Pulmonary Disease (COPD): Treatment Options','Chronic Obstructive Pulmonary Disease (COPD): Prevention Tips','Living with Chronic Obstructive Pulmonary Disease (COPD)','Asthma: Symptoms & Diagnosis','Asthma: Treatment Options','Asthma: Prevention Tips','Living with Asthma','Chronic Kidney Disease: Symptoms & Diagnosis','Chronic Kidney Disease: Treatment Options','Chronic Kidney Disease: Prevention Tips','Living with Chronic Kidney Disease','Obesity: Symptoms & Diagnosis','Obesity: Treatment Options','Obesity: Prevention Tips','Living with Obesity','High Cholesterol: Symptoms & Diagnosis','High Cholesterol: Treatment Options','High Cholesterol: Prevention Tips','Living with High Cholesterol','Thyroid Disorders: Symptoms & Diagnosis','Thyroid Disorders: Treatment Options','Thyroid Disorders: Prevention Tips','Living with Thyroid Disorders','Fatty Liver Disease: Symptoms & Diagnosis','Fatty Liver Disease: Treatment Options','Fatty Liver Disease: Prevention Tips','Living with Fatty Liver Disease','Epilepsy: Symptoms & Diagnosis','Epilepsy: Treatment Options','Epilepsy: Prevention Tips','Living with Epilepsy','Migraine: Symptoms & Diagnosis','Migraine: Treatment Options','Migraine: Prevention Tips','Living with Migraine','Peptic Ulcer Disease: Symptoms & Diagnosis','Peptic Ulcer Disease: Treatment Options','Peptic Ulcer Disease: Prevention Tips','Living with Peptic Ulcer Disease','Gastroesophageal Reflux Disease (GERD): Symptoms & Diagnosis','Gastroesophageal Reflux Disease (GERD): Treatment Options','Gastroesophageal Reflux Disease (GERD): Prevention Tips','Living with Gastroesophageal Reflux Disease (GERD)','Gallstones: Symptoms & Diagnosis','Gallstones: Treatment Options','Gallstones: Prevention Tips','Living with Gallstones','Kidney Stones: Symptoms & Diagnosis','Kidney Stones: Treatment Options','Kidney Stones: Prevention Tips','Living with Kidney Stones'],
+  maternal:['Antenatal Care Basics','Anemia in Pregnancy','Gestational Diabetes','Preeclampsia','Safe Delivery Practices','Postnatal Care','Breastfeeding Guidance','Newborn Care Essentials','Immunization Schedule for Infants','Low Birth Weight','Family Planning Methods','Preconception Health','High-Risk Pregnancy Warning Signs','Postpartum Depression','Umbilical Cord Care','Folic Acid in Pregnancy','Antenatal Care Basics: What to Expect','Antenatal Care Basics: Warning Signs','Antenatal Care Basics: Practical Tips','Antenatal Care Basics: Common Questions Answered','Anemia in Pregnancy: What to Expect','Anemia in Pregnancy: Warning Signs','Anemia in Pregnancy: Practical Tips','Anemia in Pregnancy: Common Questions Answered','Gestational Diabetes: What to Expect','Gestational Diabetes: Warning Signs','Gestational Diabetes: Practical Tips','Gestational Diabetes: Common Questions Answered','Preeclampsia: What to Expect','Preeclampsia: Warning Signs','Preeclampsia: Practical Tips','Preeclampsia: Common Questions Answered','Safe Delivery Practices: What to Expect','Safe Delivery Practices: Warning Signs','Safe Delivery Practices: Practical Tips','Safe Delivery Practices: Common Questions Answered','Postnatal Care: What to Expect','Postnatal Care: Warning Signs','Postnatal Care: Practical Tips','Postnatal Care: Common Questions Answered','Breastfeeding Guidance: What to Expect','Breastfeeding Guidance: Warning Signs','Breastfeeding Guidance: Practical Tips','Breastfeeding Guidance: Common Questions Answered','Newborn Care Essentials: What to Expect','Newborn Care Essentials: Warning Signs','Newborn Care Essentials: Practical Tips','Newborn Care Essentials: Common Questions Answered','Immunization Schedule for Infants: What to Expect','Immunization Schedule for Infants: Warning Signs','Immunization Schedule for Infants: Practical Tips','Immunization Schedule for Infants: Common Questions Answered','Low Birth Weight: What to Expect','Low Birth Weight: Warning Signs','Low Birth Weight: Practical Tips','Low Birth Weight: Common Questions Answered','Family Planning Methods: What to Expect','Family Planning Methods: Warning Signs','Family Planning Methods: Practical Tips','Family Planning Methods: Common Questions Answered','Preconception Health: What to Expect','Preconception Health: Warning Signs','Preconception Health: Practical Tips','Preconception Health: Common Questions Answered','High-Risk Pregnancy Warning Signs: What to Expect','High-Risk Pregnancy Warning Signs: Warning Signs','High-Risk Pregnancy Warning Signs: Practical Tips','High-Risk Pregnancy Warning Signs: Common Questions Answered','Postpartum Depression: What to Expect','Postpartum Depression: Warning Signs','Postpartum Depression: Practical Tips','Postpartum Depression: Common Questions Answered','Umbilical Cord Care: What to Expect','Umbilical Cord Care: Warning Signs','Umbilical Cord Care: Practical Tips','Umbilical Cord Care: Common Questions Answered','Folic Acid in Pregnancy: What to Expect','Folic Acid in Pregnancy: Warning Signs','Folic Acid in Pregnancy: Practical Tips','Folic Acid in Pregnancy: Common Questions Answered'],
+  child:['Diarrhea in Children','Childhood Pneumonia','Fever in Children','Growth Monitoring & Malnutrition','Common Childhood Rashes','Worm Infestation in Children','Ear Infections in Children','Childhood Asthma','Teething Care','Vaccination Myths and Facts','Hand, Foot and Mouth Disease','Febrile Seizures','Constipation in Children','Head Lice','Child Nutrition 1-5 Years','Managing Childhood Obesity','Diarrhea in Children: Symptoms & Diagnosis','Diarrhea in Children: Home Care Tips','Diarrhea in Children: When to See a Doctor','Diarrhea in Children: Prevention','Childhood Pneumonia: Symptoms & Diagnosis','Childhood Pneumonia: Home Care Tips','Childhood Pneumonia: When to See a Doctor','Childhood Pneumonia: Prevention','Fever in Children: Symptoms & Diagnosis','Fever in Children: Home Care Tips','Fever in Children: When to See a Doctor','Fever in Children: Prevention','Growth Monitoring & Malnutrition: Symptoms & Diagnosis','Growth Monitoring & Malnutrition: Home Care Tips','Growth Monitoring & Malnutrition: When to See a Doctor','Growth Monitoring & Malnutrition: Prevention','Common Childhood Rashes: Symptoms & Diagnosis','Common Childhood Rashes: Home Care Tips','Common Childhood Rashes: When to See a Doctor','Common Childhood Rashes: Prevention','Worm Infestation in Children: Symptoms & Diagnosis','Worm Infestation in Children: Home Care Tips','Worm Infestation in Children: When to See a Doctor','Worm Infestation in Children: Prevention','Ear Infections in Children: Symptoms & Diagnosis','Ear Infections in Children: Home Care Tips','Ear Infections in Children: When to See a Doctor','Ear Infections in Children: Prevention','Childhood Asthma: Symptoms & Diagnosis','Childhood Asthma: Home Care Tips','Childhood Asthma: When to See a Doctor','Childhood Asthma: Prevention','Teething Care: Symptoms & Diagnosis','Teething Care: Home Care Tips','Teething Care: When to See a Doctor','Teething Care: Prevention','Vaccination Myths and Facts: Symptoms & Diagnosis','Vaccination Myths and Facts: Home Care Tips','Vaccination Myths and Facts: When to See a Doctor','Vaccination Myths and Facts: Prevention','Hand, Foot and Mouth Disease: Symptoms & Diagnosis','Hand, Foot and Mouth Disease: Home Care Tips','Hand, Foot and Mouth Disease: When to See a Doctor','Hand, Foot and Mouth Disease: Prevention','Febrile Seizures: Symptoms & Diagnosis','Febrile Seizures: Home Care Tips','Febrile Seizures: When to See a Doctor','Febrile Seizures: Prevention','Constipation in Children: Symptoms & Diagnosis','Constipation in Children: Home Care Tips','Constipation in Children: When to See a Doctor','Constipation in Children: Prevention','Head Lice: Symptoms & Diagnosis','Head Lice: Home Care Tips','Head Lice: When to See a Doctor','Head Lice: Prevention','Child Nutrition 1-5 Years: Symptoms & Diagnosis','Child Nutrition 1-5 Years: Home Care Tips','Child Nutrition 1-5 Years: When to See a Doctor','Child Nutrition 1-5 Years: Prevention','Managing Childhood Obesity: Symptoms & Diagnosis','Managing Childhood Obesity: Home Care Tips','Managing Childhood Obesity: When to See a Doctor','Managing Childhood Obesity: Prevention'],
+  nutrition:['Iron Deficiency Anemia','Vitamin A Deficiency','Vitamin D Deficiency','Protein-Energy Malnutrition','Balanced Diet Basics','Iodine Deficiency Disorders','Calcium & Bone Health','Healthy Eating on a Budget','Food Safety & Hygiene','Managing Diabetes Through Diet','Diet During Pregnancy','School-Age Child Nutrition','Reducing Salt Intake','Reading Food Labels','Iron Deficiency Anemia: Symptoms & Diagnosis','Iron Deficiency Anemia: Treatment Options','Iron Deficiency Anemia: Prevention Tips','Living with Iron Deficiency Anemia','Vitamin A Deficiency: Symptoms & Diagnosis','Vitamin A Deficiency: Treatment Options','Vitamin A Deficiency: Prevention Tips','Living with Vitamin A Deficiency','Vitamin D Deficiency: Symptoms & Diagnosis','Vitamin D Deficiency: Treatment Options','Vitamin D Deficiency: Prevention Tips','Living with Vitamin D Deficiency','Protein-Energy Malnutrition: Symptoms & Diagnosis','Protein-Energy Malnutrition: Treatment Options','Protein-Energy Malnutrition: Prevention Tips','Living with Protein-Energy Malnutrition','Balanced Diet Basics: Symptoms & Diagnosis','Balanced Diet Basics: Treatment Options','Balanced Diet Basics: Prevention Tips','Living with Balanced Diet Basics','Iodine Deficiency Disorders: Symptoms & Diagnosis','Iodine Deficiency Disorders: Treatment Options','Iodine Deficiency Disorders: Prevention Tips','Living with Iodine Deficiency Disorders','Calcium & Bone Health: Symptoms & Diagnosis','Calcium & Bone Health: Treatment Options','Calcium & Bone Health: Prevention Tips','Living with Calcium & Bone Health','Healthy Eating on a Budget: Symptoms & Diagnosis','Healthy Eating on a Budget: Treatment Options','Healthy Eating on a Budget: Prevention Tips','Living with Healthy Eating on a Budget','Food Safety & Hygiene: Symptoms & Diagnosis','Food Safety & Hygiene: Treatment Options','Food Safety & Hygiene: Prevention Tips','Living with Food Safety & Hygiene','Managing Diabetes Through Diet: Symptoms & Diagnosis','Managing Diabetes Through Diet: Treatment Options','Managing Diabetes Through Diet: Prevention Tips','Living with Managing Diabetes Through Diet','Diet During Pregnancy: Symptoms & Diagnosis','Diet During Pregnancy: Treatment Options','Diet During Pregnancy: Prevention Tips','Living with Diet During Pregnancy','School-Age Child Nutrition: Symptoms & Diagnosis','School-Age Child Nutrition: Treatment Options','School-Age Child Nutrition: Prevention Tips','Living with School-Age Child Nutrition','Reducing Salt Intake: Symptoms & Diagnosis','Reducing Salt Intake: Treatment Options','Reducing Salt Intake: Prevention Tips','Living with Reducing Salt Intake','Reading Food Labels: Symptoms & Diagnosis','Reading Food Labels: Treatment Options','Reading Food Labels: Prevention Tips','Living with Reading Food Labels'],
+  mental:['Depression','Anxiety Disorders','Stress Management','Sleep Disorders (Insomnia)','Postpartum Depression Support','Substance Use & Addiction','Understanding Panic Attacks','Coping with Grief and Loss','Mental Health in Adolescents','Workplace Stress and Burnout','Suicide Prevention Awareness','Bipolar Disorder Basics','Obsessive-Compulsive Disorder (OCD)','Building Emotional Resilience','Depression: Symptoms & Diagnosis','Depression: Treatment Options','Depression: Prevention Tips','Living with Depression','Anxiety Disorders: Symptoms & Diagnosis','Anxiety Disorders: Treatment Options','Anxiety Disorders: Prevention Tips','Living with Anxiety Disorders','Stress Management: Symptoms & Diagnosis','Stress Management: Treatment Options','Stress Management: Prevention Tips','Living with Stress Management','Sleep Disorders (Insomnia): Symptoms & Diagnosis','Sleep Disorders (Insomnia): Treatment Options','Sleep Disorders (Insomnia): Prevention Tips','Living with Sleep Disorders (Insomnia)','Postpartum Depression Support: Symptoms & Diagnosis','Postpartum Depression Support: Treatment Options','Postpartum Depression Support: Prevention Tips','Living with Postpartum Depression Support','Substance Use & Addiction: Symptoms & Diagnosis','Substance Use & Addiction: Treatment Options','Substance Use & Addiction: Prevention Tips','Living with Substance Use & Addiction','Understanding Panic Attacks: Symptoms & Diagnosis','Understanding Panic Attacks: Treatment Options','Understanding Panic Attacks: Prevention Tips','Living with Understanding Panic Attacks','Coping with Grief and Loss: Symptoms & Diagnosis','Coping with Grief and Loss: Treatment Options','Coping with Grief and Loss: Prevention Tips','Living with Coping with Grief and Loss','Mental Health in Adolescents: Symptoms & Diagnosis','Mental Health in Adolescents: Treatment Options','Mental Health in Adolescents: Prevention Tips','Living with Mental Health in Adolescents','Workplace Stress and Burnout: Symptoms & Diagnosis','Workplace Stress and Burnout: Treatment Options','Workplace Stress and Burnout: Prevention Tips','Living with Workplace Stress and Burnout','Suicide Prevention Awareness: Symptoms & Diagnosis','Suicide Prevention Awareness: Treatment Options','Suicide Prevention Awareness: Prevention Tips','Living with Suicide Prevention Awareness','Bipolar Disorder Basics: Symptoms & Diagnosis','Bipolar Disorder Basics: Treatment Options','Bipolar Disorder Basics: Prevention Tips','Living with Bipolar Disorder Basics','Obsessive-Compulsive Disorder (OCD): Symptoms & Diagnosis','Obsessive-Compulsive Disorder (OCD): Treatment Options','Obsessive-Compulsive Disorder (OCD): Prevention Tips','Living with Obsessive-Compulsive Disorder (OCD)','Building Emotional Resilience: Symptoms & Diagnosis','Building Emotional Resilience: Treatment Options','Building Emotional Resilience: Prevention Tips','Living with Building Emotional Resilience'],
+  women:['Menstrual Health & Hygiene','Polycystic Ovary Syndrome (PCOS)','Menopause','Cervical Cancer Screening','Breast Cancer Awareness & Self-Exam','Urinary Tract Infections','Pelvic Inflammatory Disease','Fibroids','Endometriosis','Osteoporosis in Women','Contraception Options','Infertility Overview','Pregnancy Planning','Vaginal Health Basics','Menstrual Health & Hygiene: Symptoms & Diagnosis','Menstrual Health & Hygiene: Treatment Options','Menstrual Health & Hygiene: Prevention Tips','Living with Menstrual Health & Hygiene','Polycystic Ovary Syndrome (PCOS): Symptoms & Diagnosis','Polycystic Ovary Syndrome (PCOS): Treatment Options','Polycystic Ovary Syndrome (PCOS): Prevention Tips','Living with Polycystic Ovary Syndrome (PCOS)','Menopause: Symptoms & Diagnosis','Menopause: Treatment Options','Menopause: Prevention Tips','Living with Menopause','Cervical Cancer Screening: Symptoms & Diagnosis','Cervical Cancer Screening: Treatment Options','Cervical Cancer Screening: Prevention Tips','Living with Cervical Cancer Screening','Breast Cancer Awareness & Self-Exam: Symptoms & Diagnosis','Breast Cancer Awareness & Self-Exam: Treatment Options','Breast Cancer Awareness & Self-Exam: Prevention Tips','Living with Breast Cancer Awareness & Self-Exam','Urinary Tract Infections: Symptoms & Diagnosis','Urinary Tract Infections: Treatment Options','Urinary Tract Infections: Prevention Tips','Living with Urinary Tract Infections','Pelvic Inflammatory Disease: Symptoms & Diagnosis','Pelvic Inflammatory Disease: Treatment Options','Pelvic Inflammatory Disease: Prevention Tips','Living with Pelvic Inflammatory Disease','Fibroids: Symptoms & Diagnosis','Fibroids: Treatment Options','Fibroids: Prevention Tips','Living with Fibroids','Endometriosis: Symptoms & Diagnosis','Endometriosis: Treatment Options','Endometriosis: Prevention Tips','Living with Endometriosis','Osteoporosis in Women: Symptoms & Diagnosis','Osteoporosis in Women: Treatment Options','Osteoporosis in Women: Prevention Tips','Living with Osteoporosis in Women','Contraception Options: Symptoms & Diagnosis','Contraception Options: Treatment Options','Contraception Options: Prevention Tips','Living with Contraception Options','Infertility Overview: Symptoms & Diagnosis','Infertility Overview: Treatment Options','Infertility Overview: Prevention Tips','Living with Infertility Overview','Pregnancy Planning: Symptoms & Diagnosis','Pregnancy Planning: Treatment Options','Pregnancy Planning: Prevention Tips','Living with Pregnancy Planning','Vaginal Health Basics: Symptoms & Diagnosis','Vaginal Health Basics: Treatment Options','Vaginal Health Basics: Prevention Tips','Living with Vaginal Health Basics'],
+  men:['Prostate Health','Testicular Self-Examination','Erectile Dysfunction','Male Infertility','Low Testosterone','Hernia Awareness','Men\'s Cardiovascular Risk','Prostate Cancer Screening','Hair Loss in Men','Male Reproductive Health Basics','Prostate Health: Symptoms & Diagnosis','Prostate Health: Treatment Options','Prostate Health: Prevention Tips','Living with Prostate Health','Testicular Self-Examination: Symptoms & Diagnosis','Testicular Self-Examination: Treatment Options','Testicular Self-Examination: Prevention Tips','Living with Testicular Self-Examination','Erectile Dysfunction: Symptoms & Diagnosis','Erectile Dysfunction: Treatment Options','Erectile Dysfunction: Prevention Tips','Living with Erectile Dysfunction','Male Infertility: Symptoms & Diagnosis','Male Infertility: Treatment Options','Male Infertility: Prevention Tips','Living with Male Infertility','Low Testosterone: Symptoms & Diagnosis','Low Testosterone: Treatment Options','Low Testosterone: Prevention Tips','Living with Low Testosterone','Hernia Awareness: Symptoms & Diagnosis','Hernia Awareness: Treatment Options','Hernia Awareness: Prevention Tips','Living with Hernia Awareness','Men\'s Cardiovascular Risk: Symptoms & Diagnosis','Men\'s Cardiovascular Risk: Treatment Options','Men\'s Cardiovascular Risk: Prevention Tips','Living with Men\'s Cardiovascular Risk','Prostate Cancer Screening: Symptoms & Diagnosis','Prostate Cancer Screening: Treatment Options','Prostate Cancer Screening: Prevention Tips','Living with Prostate Cancer Screening','Hair Loss in Men: Symptoms & Diagnosis','Hair Loss in Men: Treatment Options','Hair Loss in Men: Prevention Tips','Living with Hair Loss in Men','Male Reproductive Health Basics: Symptoms & Diagnosis','Male Reproductive Health Basics: Treatment Options','Male Reproductive Health Basics: Prevention Tips','Living with Male Reproductive Health Basics'],
+  elderly:['Osteoarthritis','Osteoporosis','Dementia and Memory Loss','Fall Prevention in Older Adults','Managing Multiple Medications','Age-Related Hearing Loss','Cataracts','Urinary Incontinence','Sarcopenia (Muscle Loss with Age)','Elder Nutrition','Managing Chronic Pain in Old Age','Preventing Isolation in Elderly','Osteoarthritis: Symptoms & Diagnosis','Osteoarthritis: Treatment Options','Osteoarthritis: Prevention Tips','Living with Osteoarthritis','Osteoporosis: Symptoms & Diagnosis','Osteoporosis: Treatment Options','Osteoporosis: Prevention Tips','Living with Osteoporosis','Dementia and Memory Loss: Symptoms & Diagnosis','Dementia and Memory Loss: Treatment Options','Dementia and Memory Loss: Prevention Tips','Living with Dementia and Memory Loss','Fall Prevention in Older Adults: Symptoms & Diagnosis','Fall Prevention in Older Adults: Treatment Options','Fall Prevention in Older Adults: Prevention Tips','Living with Fall Prevention in Older Adults','Managing Multiple Medications: Symptoms & Diagnosis','Managing Multiple Medications: Treatment Options','Managing Multiple Medications: Prevention Tips','Living with Managing Multiple Medications','Age-Related Hearing Loss: Symptoms & Diagnosis','Age-Related Hearing Loss: Treatment Options','Age-Related Hearing Loss: Prevention Tips','Living with Age-Related Hearing Loss','Cataracts: Symptoms & Diagnosis','Cataracts: Treatment Options','Cataracts: Prevention Tips','Living with Cataracts','Urinary Incontinence: Symptoms & Diagnosis','Urinary Incontinence: Treatment Options','Urinary Incontinence: Prevention Tips','Living with Urinary Incontinence','Sarcopenia (Muscle Loss with Age): Symptoms & Diagnosis','Sarcopenia (Muscle Loss with Age): Treatment Options','Sarcopenia (Muscle Loss with Age): Prevention Tips','Living with Sarcopenia (Muscle Loss with Age)','Elder Nutrition: Symptoms & Diagnosis','Elder Nutrition: Treatment Options','Elder Nutrition: Prevention Tips','Living with Elder Nutrition','Managing Chronic Pain in Old Age: Symptoms & Diagnosis','Managing Chronic Pain in Old Age: Treatment Options','Managing Chronic Pain in Old Age: Prevention Tips','Living with Managing Chronic Pain in Old Age','Preventing Isolation in Elderly: Symptoms & Diagnosis','Preventing Isolation in Elderly: Treatment Options','Preventing Isolation in Elderly: Prevention Tips','Living with Preventing Isolation in Elderly'],
+  skineye:['Scabies','Fungal Skin Infections','Acne','Eczema','Psoriasis','Conjunctivitis (Eye Infection)','Refractive Errors (Glasses)','Cataracts','Ear Wax & Hearing Care','Sinusitis','Sore Throat','Tonsillitis','Dandruff & Scalp Health','Skin Allergies','Scabies: Symptoms & Diagnosis','Scabies: Treatment Options','Scabies: Prevention Tips','Living with Scabies','Fungal Skin Infections: Symptoms & Diagnosis','Fungal Skin Infections: Treatment Options','Fungal Skin Infections: Prevention Tips','Living with Fungal Skin Infections','Acne: Symptoms & Diagnosis','Acne: Treatment Options','Acne: Prevention Tips','Living with Acne','Eczema: Symptoms & Diagnosis','Eczema: Treatment Options','Eczema: Prevention Tips','Living with Eczema','Psoriasis: Symptoms & Diagnosis','Psoriasis: Treatment Options','Psoriasis: Prevention Tips','Living with Psoriasis','Conjunctivitis (Eye Infection): Symptoms & Diagnosis','Conjunctivitis (Eye Infection): Treatment Options','Conjunctivitis (Eye Infection): Prevention Tips','Living with Conjunctivitis (Eye Infection)','Refractive Errors (Glasses): Symptoms & Diagnosis','Refractive Errors (Glasses): Treatment Options','Refractive Errors (Glasses): Prevention Tips','Living with Refractive Errors (Glasses)','Cataracts: Symptoms & Diagnosis','Cataracts: Treatment Options','Cataracts: Prevention Tips','Living with Cataracts','Ear Wax & Hearing Care: Symptoms & Diagnosis','Ear Wax & Hearing Care: Treatment Options','Ear Wax & Hearing Care: Prevention Tips','Living with Ear Wax & Hearing Care','Sinusitis: Symptoms & Diagnosis','Sinusitis: Treatment Options','Sinusitis: Prevention Tips','Living with Sinusitis','Sore Throat: Symptoms & Diagnosis','Sore Throat: Treatment Options','Sore Throat: Prevention Tips','Living with Sore Throat','Tonsillitis: Symptoms & Diagnosis','Tonsillitis: Treatment Options','Tonsillitis: Prevention Tips','Living with Tonsillitis','Dandruff & Scalp Health: Symptoms & Diagnosis','Dandruff & Scalp Health: Treatment Options','Dandruff & Scalp Health: Prevention Tips','Living with Dandruff & Scalp Health','Skin Allergies: Symptoms & Diagnosis','Skin Allergies: Treatment Options','Skin Allergies: Prevention Tips','Living with Skin Allergies'],
+  firstaid:['Snake Bite First Aid','Burns First Aid','Choking Response','Cardiopulmonary Resuscitation (CPR) Basics','Managing Cuts and Wounds','Heat Stroke Emergency Response','Fracture First Aid','Nosebleed Management','Poisoning First Aid','Drowning Response Basics','Electric Shock First Aid','Animal Bite Management','Fainting First Response','Road Traffic Accident First Response','Snake Bite First Aid: Step-by-Step Guide','Snake Bite First Aid: Common Mistakes to Avoid','Snake Bite First Aid: What Not to Do','Snake Bite First Aid for Children','Burns First Aid: Step-by-Step Guide','Burns First Aid: Common Mistakes to Avoid','Burns First Aid: What Not to Do','Burns First Aid for Children','Choking Response: Step-by-Step Guide','Choking Response: Common Mistakes to Avoid','Choking Response: What Not to Do','Choking Response for Children','Cardiopulmonary Resuscitation (CPR) Basics: Step-by-Step Guide','Cardiopulmonary Resuscitation (CPR) Basics: Common Mistakes to Avoid','Cardiopulmonary Resuscitation (CPR) Basics: What Not to Do','Cardiopulmonary Resuscitation (CPR) Basics for Children','Managing Cuts and Wounds: Step-by-Step Guide','Managing Cuts and Wounds: Common Mistakes to Avoid','Managing Cuts and Wounds: What Not to Do','Managing Cuts and Wounds for Children','Heat Stroke Emergency Response: Step-by-Step Guide','Heat Stroke Emergency Response: Common Mistakes to Avoid','Heat Stroke Emergency Response: What Not to Do','Heat Stroke Emergency Response for Children','Fracture First Aid: Step-by-Step Guide','Fracture First Aid: Common Mistakes to Avoid','Fracture First Aid: What Not to Do','Fracture First Aid for Children','Nosebleed Management: Step-by-Step Guide','Nosebleed Management: Common Mistakes to Avoid','Nosebleed Management: What Not to Do','Nosebleed Management for Children','Poisoning First Aid: Step-by-Step Guide','Poisoning First Aid: Common Mistakes to Avoid','Poisoning First Aid: What Not to Do','Poisoning First Aid for Children','Drowning Response Basics: Step-by-Step Guide','Drowning Response Basics: Common Mistakes to Avoid','Drowning Response Basics: What Not to Do','Drowning Response Basics for Children','Electric Shock First Aid: Step-by-Step Guide','Electric Shock First Aid: Common Mistakes to Avoid','Electric Shock First Aid: What Not to Do','Electric Shock First Aid for Children','Animal Bite Management: Step-by-Step Guide','Animal Bite Management: Common Mistakes to Avoid','Animal Bite Management: What Not to Do','Animal Bite Management for Children','Fainting First Response: Step-by-Step Guide','Fainting First Response: Common Mistakes to Avoid','Fainting First Response: What Not to Do','Fainting First Response for Children','Road Traffic Accident First Response: Step-by-Step Guide','Road Traffic Accident First Response: Common Mistakes to Avoid','Road Traffic Accident First Response: What Not to Do','Road Traffic Accident First Response for Children'],
+  sexual:['Sexually Transmitted Infections (STI) Prevention','Safe Sex Practices','Condom Use Guidance','Emergency Contraception','HIV Testing & Counselling','Reproductive Rights Basics','Adolescent Sexual Health Education','Infertility Support','Menstrual Cycle Tracking','Sexual Health Myths and Facts','Cervical Cancer Vaccination (HPV)','Puberty Education','Sexually Transmitted Infections (STI) Prevention: Facts & Myths','Sexually Transmitted Infections (STI) Prevention: Where to Get Help','Sexually Transmitted Infections (STI) Prevention: Frequently Asked Questions','Sexually Transmitted Infections (STI) Prevention Awareness','Safe Sex Practices: Facts & Myths','Safe Sex Practices: Where to Get Help','Safe Sex Practices: Frequently Asked Questions','Safe Sex Practices Awareness','Condom Use Guidance: Facts & Myths','Condom Use Guidance: Where to Get Help','Condom Use Guidance: Frequently Asked Questions','Condom Use Guidance Awareness','Emergency Contraception: Facts & Myths','Emergency Contraception: Where to Get Help','Emergency Contraception: Frequently Asked Questions','Emergency Contraception Awareness','HIV Testing & Counselling: Facts & Myths','HIV Testing & Counselling: Where to Get Help','HIV Testing & Counselling: Frequently Asked Questions','HIV Testing & Counselling Awareness','Reproductive Rights Basics: Facts & Myths','Reproductive Rights Basics: Where to Get Help','Reproductive Rights Basics: Frequently Asked Questions','Reproductive Rights Basics Awareness','Adolescent Sexual Health Education: Facts & Myths','Adolescent Sexual Health Education: Where to Get Help','Adolescent Sexual Health Education: Frequently Asked Questions','Adolescent Sexual Health Education Awareness','Infertility Support: Facts & Myths','Infertility Support: Where to Get Help','Infertility Support: Frequently Asked Questions','Infertility Support Awareness','Menstrual Cycle Tracking: Facts & Myths','Menstrual Cycle Tracking: Where to Get Help','Menstrual Cycle Tracking: Frequently Asked Questions','Menstrual Cycle Tracking Awareness','Sexual Health Myths and Facts: Facts & Myths','Sexual Health Myths and Facts: Where to Get Help','Sexual Health Myths and Facts: Frequently Asked Questions','Sexual Health Myths and Facts Awareness','Cervical Cancer Vaccination (HPV): Facts & Myths','Cervical Cancer Vaccination (HPV): Where to Get Help','Cervical Cancer Vaccination (HPV): Frequently Asked Questions','Cervical Cancer Vaccination (HPV) Awareness','Puberty Education: Facts & Myths','Puberty Education: Where to Get Help','Puberty Education: Frequently Asked Questions','Puberty Education Awareness'],
+  occupational:['Heat Stroke & Heat Exhaustion','Air Pollution & Respiratory Health','Waterborne Disease Prevention','Occupational Back Injury Prevention','Pesticide Exposure Safety','Noise-Induced Hearing Loss','Workplace Ergonomics','Safe Drinking Water Practices','Flood-Related Health Risks','Mosquito-Borne Disease Prevention','Heat Wave Safety Tips','Indoor Air Quality & Cooking Smoke','Heat Stroke & Heat Exhaustion: Prevention Tips','Heat Stroke & Heat Exhaustion: Warning Signs','Heat Stroke & Heat Exhaustion: Safety Guidelines','Heat Stroke & Heat Exhaustion at Work','Air Pollution & Respiratory Health: Prevention Tips','Air Pollution & Respiratory Health: Warning Signs','Air Pollution & Respiratory Health: Safety Guidelines','Air Pollution & Respiratory Health at Work','Waterborne Disease Prevention: Prevention Tips','Waterborne Disease Prevention: Warning Signs','Waterborne Disease Prevention: Safety Guidelines','Waterborne Disease Prevention at Work','Occupational Back Injury Prevention: Prevention Tips','Occupational Back Injury Prevention: Warning Signs','Occupational Back Injury Prevention: Safety Guidelines','Occupational Back Injury Prevention at Work','Pesticide Exposure Safety: Prevention Tips','Pesticide Exposure Safety: Warning Signs','Pesticide Exposure Safety: Safety Guidelines','Pesticide Exposure Safety at Work','Noise-Induced Hearing Loss: Prevention Tips','Noise-Induced Hearing Loss: Warning Signs','Noise-Induced Hearing Loss: Safety Guidelines','Noise-Induced Hearing Loss at Work','Workplace Ergonomics: Prevention Tips','Workplace Ergonomics: Warning Signs','Workplace Ergonomics: Safety Guidelines','Workplace Ergonomics at Work','Safe Drinking Water Practices: Prevention Tips','Safe Drinking Water Practices: Warning Signs','Safe Drinking Water Practices: Safety Guidelines','Safe Drinking Water Practices at Work','Flood-Related Health Risks: Prevention Tips','Flood-Related Health Risks: Warning Signs','Flood-Related Health Risks: Safety Guidelines','Flood-Related Health Risks at Work','Mosquito-Borne Disease Prevention: Prevention Tips','Mosquito-Borne Disease Prevention: Warning Signs','Mosquito-Borne Disease Prevention: Safety Guidelines','Mosquito-Borne Disease Prevention at Work','Heat Wave Safety Tips: Prevention Tips','Heat Wave Safety Tips: Warning Signs','Heat Wave Safety Tips: Safety Guidelines','Heat Wave Safety Tips at Work','Indoor Air Quality & Cooking Smoke: Prevention Tips','Indoor Air Quality & Cooking Smoke: Warning Signs','Indoor Air Quality & Cooking Smoke: Safety Guidelines','Indoor Air Quality & Cooking Smoke at Work'],
+  musculoskeletal:['Lower Back Pain','Neck Pain','Rheumatoid Arthritis','Gout','Frozen Shoulder','Sciatica','Carpal Tunnel Syndrome','Fibromyalgia','Sports Injuries Overview','Sprains and Strains','Osteoporosis Prevention','Knee Pain Management','Posture and Spinal Health','Chronic Pain Management Strategies','Lower Back Pain: Symptoms & Diagnosis','Lower Back Pain: Treatment Options','Lower Back Pain: Prevention Tips','Living with Lower Back Pain','Neck Pain: Symptoms & Diagnosis','Neck Pain: Treatment Options','Neck Pain: Prevention Tips','Living with Neck Pain','Rheumatoid Arthritis: Symptoms & Diagnosis','Rheumatoid Arthritis: Treatment Options','Rheumatoid Arthritis: Prevention Tips','Living with Rheumatoid Arthritis','Gout: Symptoms & Diagnosis','Gout: Treatment Options','Gout: Prevention Tips','Living with Gout','Frozen Shoulder: Symptoms & Diagnosis','Frozen Shoulder: Treatment Options','Frozen Shoulder: Prevention Tips','Living with Frozen Shoulder','Sciatica: Symptoms & Diagnosis','Sciatica: Treatment Options','Sciatica: Prevention Tips','Living with Sciatica','Carpal Tunnel Syndrome: Symptoms & Diagnosis','Carpal Tunnel Syndrome: Treatment Options','Carpal Tunnel Syndrome: Prevention Tips','Living with Carpal Tunnel Syndrome','Fibromyalgia: Symptoms & Diagnosis','Fibromyalgia: Treatment Options','Fibromyalgia: Prevention Tips','Living with Fibromyalgia','Sports Injuries Overview: Symptoms & Diagnosis','Sports Injuries Overview: Treatment Options','Sports Injuries Overview: Prevention Tips','Living with Sports Injuries Overview','Sprains and Strains: Symptoms & Diagnosis','Sprains and Strains: Treatment Options','Sprains and Strains: Prevention Tips','Living with Sprains and Strains','Osteoporosis Prevention: Symptoms & Diagnosis','Osteoporosis Prevention: Treatment Options','Osteoporosis Prevention: Prevention Tips','Living with Osteoporosis Prevention','Knee Pain Management: Symptoms & Diagnosis','Knee Pain Management: Treatment Options','Knee Pain Management: Prevention Tips','Living with Knee Pain Management','Posture and Spinal Health: Symptoms & Diagnosis','Posture and Spinal Health: Treatment Options','Posture and Spinal Health: Prevention Tips','Living with Posture and Spinal Health','Chronic Pain Management Strategies: Symptoms & Diagnosis','Chronic Pain Management Strategies: Treatment Options','Chronic Pain Management Strategies: Prevention Tips','Living with Chronic Pain Management Strategies'],
+};
+
+// Fully written English reference articles (reviewed status)
+const FLAGSHIP = {
+"Common Cold":{overview:"The common cold is a mild viral infection of the nose and throat. Most adults recover within 7\u201310 days without any specific treatment.",symptoms:["Runny or blocked nose","Sore throat","Sneezing and coughing","Mild fatigue","Low-grade fever (more common in children)"],causesLabel:"Causes",causes:["Caused by viruses, commonly rhinoviruses","Spreads through droplets from coughing or sneezing","Spreads via contaminated hands and surfaces"],preventionLabel:"Prevention",prevention:["Wash hands frequently with soap","Avoid close contact with infected people","Cover your mouth and nose when coughing or sneezing","Keep indoor spaces ventilated"],doctor:"See a doctor if fever is high, symptoms last more than 10 days, or breathing becomes difficult."},
+"Dengue Fever":{overview:"Dengue is a mosquito-borne viral illness common across South Asia, especially during and after the monsoon season. Most cases are mild, but some can become severe and need urgent care.",symptoms:["Sudden high fever","Severe headache and pain behind the eyes","Joint and muscle pain","Skin rash","Mild bleeding from gums or nose"],causesLabel:"Risk Factors",causes:["Spread by the bite of an infected Aedes mosquito","Mosquitoes breed in stagnant water","Risk is higher in urban and semi-urban areas during the rainy season"],preventionLabel:"Prevention",prevention:["Remove stagnant water around the home","Use mosquito nets and repellents","Wear long sleeves during peak mosquito hours","Support community fogging and larvicide programmes"],doctor:"Seek immediate care for severe abdominal pain, persistent vomiting, bleeding, or difficulty breathing \u2014 these can signal severe dengue."},
+"Type 2 Diabetes":{overview:"Type 2 diabetes is a long-term condition in which the body cannot properly regulate blood sugar. It is largely manageable through lifestyle changes and medication.",symptoms:["Increased thirst and urination","Unexplained fatigue","Blurred vision","Slow-healing wounds","Unintentional weight loss"],causesLabel:"Risk Factors",causes:["Overweight or obesity","Family history of diabetes","Sedentary lifestyle","Age over 45","History of gestational diabetes"],preventionLabel:"Prevention & Management",prevention:["Maintain a healthy weight","Exercise regularly \u2014 aim for 150 minutes a week","Choose whole grains and vegetables over refined carbohydrates","Get regular blood sugar screening"],doctor:"See a doctor for persistent thirst, fatigue, or unexplained weight changes, and for regular monitoring if already diagnosed."},
+"Hypertension (High Blood Pressure)":{overview:"Hypertension is persistently high pressure in the arteries. It often has no symptoms but is a major risk factor for heart disease and stroke.",symptoms:['Usually none \u2014 it is often called a "silent" condition',"Occasionally headaches","Rarely, dizziness or nosebleeds in severe cases"],causesLabel:"Risk Factors",causes:["High salt intake","Lack of physical activity","Obesity","Smoking and alcohol use","Family history","Chronic stress"],preventionLabel:"Prevention",prevention:["Reduce salt intake","Exercise regularly","Maintain a healthy weight","Limit alcohol","Manage stress","Get blood pressure checked regularly"],doctor:"Get blood pressure checked at least once a year, or more often if a reading is consistently above 140/90 mmHg."},
+"Antenatal Care Basics":{overview:"Antenatal (prenatal) care refers to regular check-ups during pregnancy to monitor the health of the mother and baby.",symptoms:["Regular blood pressure and weight checks","Blood and urine tests","Iron and folic acid supplementation","Tetanus vaccination","Growth and position monitoring by ultrasound"],causesLabel:"Recommended Schedule",causes:["At least 8 contacts with a health worker across pregnancy, as recommended by WHO","More frequent visits in the last trimester"],preventionLabel:"Self-Care",prevention:["Eat a balanced, iron-rich diet","Avoid smoking, alcohol, and self-medication","Attend all scheduled check-ups","Rest adequately"],doctor:"Seek care immediately for bleeding, severe headache, blurred vision, reduced fetal movement, or swelling of the face or hands."},
+"Anemia in Pregnancy":{overview:"Anemia during pregnancy, most often due to low iron levels, increases risks for both mother and baby if left untreated.",symptoms:["Fatigue and weakness","Pale skin","Shortness of breath","Dizziness","Rapid heartbeat"],causesLabel:"Causes & Risk Factors",causes:["Increased iron demand during pregnancy","Poor dietary iron intake","Closely spaced pregnancies","Underlying worm infestation"],preventionLabel:"Prevention",prevention:["Take iron and folic acid supplements as advised","Eat iron-rich foods such as leafy greens and legumes","Combine iron-rich foods with vitamin C for better absorption","Get hemoglobin checked regularly during antenatal visits"],doctor:"See a doctor promptly if experiencing severe fatigue, breathlessness, or fainting during pregnancy."},
+"Diarrhea in Children":{overview:"Diarrhea is a leading cause of illness in young children, most often caused by infection and spread through contaminated food or water. It is usually treatable at home if managed early.",symptoms:["Frequent loose or watery stools","Vomiting","Reduced appetite","Signs of dehydration \u2014 dry mouth, less urination, sunken eyes"],causesLabel:"Causes",causes:["Viral or bacterial infections","Contaminated drinking water","Poor hand hygiene","Unsafe food handling"],preventionLabel:"Prevention & Home Care",prevention:["Give oral rehydration solution (ORS) and zinc supplements","Continue breastfeeding or feeding","Wash hands with soap before feeding and after using the toilet","Ensure safe drinking water"],doctor:"Seek urgent care for blood in stool, persistent vomiting, signs of dehydration, or diarrhea lasting more than a few days."},
+"Childhood Pneumonia":{overview:"Pneumonia is a lung infection and one of the leading causes of death in young children worldwide, though it is preventable and treatable.",symptoms:["Fast or difficult breathing","Cough","Fever","Chest indrawing \u2014 the chest pulling in with breaths","Reduced feeding and lethargy"],causesLabel:"Causes",causes:["Bacterial or viral infection","Higher risk with malnutrition, indoor air pollution, and incomplete vaccination"],preventionLabel:"Prevention",prevention:["Complete recommended childhood vaccinations, including pneumococcal and measles","Exclusive breastfeeding for the first 6 months","Reduce exposure to indoor smoke","Maintain good nutrition and hygiene"],doctor:"Seek urgent medical care if a child has fast or laboured breathing, chest indrawing, or is unusually drowsy."},
+"Iron Deficiency Anemia":{overview:"Iron deficiency anemia occurs when the body lacks enough iron to make healthy red blood cells. It is one of the most common nutritional deficiencies in South Asia.",symptoms:["Fatigue and weakness","Pale skin and nails","Shortness of breath","Difficulty concentrating","Brittle nails"],causesLabel:"Causes",causes:["Inadequate dietary iron","Blood loss, including heavy menstrual periods","Poor absorption","Increased needs during pregnancy and growth"],preventionLabel:"Prevention",prevention:["Eat iron-rich foods such as leafy vegetables, legumes, meat, and jaggery","Pair iron-rich foods with vitamin C sources","Take iron supplements when advised","Treat underlying causes such as worm infections"],doctor:"See a doctor if fatigue, pallor, or breathlessness persists, especially in children, pregnant women, and menstruating girls."},
+"Depression":{overview:"Depression is a common mental health condition marked by persistent sadness and loss of interest in daily activities. It is treatable with the right support.",symptoms:["Persistent sadness or low mood","Loss of interest in activities once enjoyed","Changes in sleep or appetite","Low energy","Difficulty concentrating","In severe cases, thoughts of self-harm"],causesLabel:"Risk Factors",causes:["Family history","Major life stress or loss","Chronic illness","Social isolation"],preventionLabel:"Self-Care",prevention:["Maintain social connections","Get regular physical activity","Aim for adequate sleep","Seek professional help early"],doctor:"Speak to a health professional if low mood lasts more than two weeks and affects daily life, or immediately if there are thoughts of self-harm."},
+"Anxiety Disorders":{overview:"Anxiety disorders involve excessive, persistent worry or fear that interferes with daily life, beyond normal everyday stress.",symptoms:["Persistent worry or nervousness","Restlessness","Rapid heartbeat","Difficulty sleeping","Muscle tension","Avoidance of certain situations"],causesLabel:"Risk Factors",causes:["Family history","Chronic stress","Traumatic experiences","Other mental health conditions"],preventionLabel:"Self-Care",prevention:["Practise relaxation techniques such as breathing exercises","Limit caffeine","Maintain regular sleep and exercise","Seek counselling when needed"],doctor:"See a professional if anxiety is persistent, disproportionate, or interferes with work, relationships, or daily tasks."},
+"Menstrual Health & Hygiene":{overview:"Understanding the menstrual cycle and practising good hygiene supports comfort, health, and dignity during periods.",symptoms:["Cycles usually range from 21\u201335 days","Bleeding typically lasts 3\u20137 days","Some variation between cycles is normal"],causesLabel:"Hygiene Practices",causes:["Change pads, tampons, or cups every 4\u20136 hours","Wash hands before and after changing","Use clean water and mild soap for the genital area","Dispose of used products hygienically"],preventionLabel:"When It Isn't Normal",prevention:["Very heavy bleeding may need medical review","Cycles shorter than 21 or longer than 35 days may need review","Severe pain that disrupts daily life may need review"],doctor:"See a doctor for very heavy or prolonged bleeding, severe pain, or irregular cycles that disrupt daily life."},
+"Polycystic Ovary Syndrome (PCOS)":{overview:"PCOS is a common hormonal condition affecting people with ovaries, often involving irregular periods and elevated androgen levels.",symptoms:["Irregular or absent periods","Excess facial or body hair growth","Acne","Weight gain","Difficulty conceiving"],causesLabel:"Causes & Risk Factors",causes:["Hormonal imbalance","Insulin resistance","Family history","Often linked with overweight or obesity"],preventionLabel:"Management",prevention:["Regular exercise and a balanced diet","Weight management","Medications as prescribed for symptom control","Regular monitoring for related conditions such as diabetes"],doctor:"See a doctor for irregular periods, unexplained hair growth or acne, or difficulty conceiving."},
+"Prostate Health":{overview:"The prostate gland can enlarge or develop problems with age; awareness helps with early detection of treatable conditions.",symptoms:["Frequent urination, especially at night","Weak or interrupted urine stream","Difficulty starting urination","Feeling of incomplete emptying"],causesLabel:"Risk Factors",causes:["Increasing age","Family history of prostate problems","Sedentary lifestyle"],preventionLabel:"Prevention & Self-Care",prevention:["Stay physically active","Eat a balanced diet with fruits and vegetables","Get routine check-ups after age 50, or 45 with family history","Avoid excessive caffeine or alcohol before bed"],doctor:"See a doctor for difficulty urinating, blood in urine, or persistent pelvic discomfort."},
+"Osteoarthritis":{overview:"Osteoarthritis is the most common form of arthritis, caused by wear and tear of joint cartilage, typically affecting knees, hips, and hands.",symptoms:["Joint pain and stiffness, especially after rest","Reduced range of motion","Swelling around joints","A grating sensation with movement"],causesLabel:"Risk Factors",causes:["Older age","Obesity","Previous joint injury","Repetitive joint stress"],preventionLabel:"Management",prevention:["Maintain a healthy weight","Try low-impact exercise such as swimming or walking","Consider physiotherapy","Follow pain management advice from a doctor"],doctor:"See a doctor if joint pain persists, worsens, or limits daily activities."},
+"Scabies":{overview:"Scabies is a contagious skin condition caused by tiny mites that burrow into the skin, causing intense itching.",symptoms:["Intense itching, worse at night","Small raised bumps or blisters","Thin burrow tracks on the skin","Commonly affects fingers, wrists, and waistline"],causesLabel:"Causes",causes:["Direct skin-to-skin contact","Sharing bedding or clothing with an infected person"],preventionLabel:"Prevention",prevention:["Avoid close contact with infected individuals","Wash bedding and clothing in hot water","Treat all household or close contacts together","Maintain good personal hygiene"],doctor:"See a doctor for diagnosis and prescription treatment \u2014 over-the-counter remedies are usually not enough."},
+"Conjunctivitis (Eye Infection)":{overview:'Conjunctivitis, or "pink eye," is inflammation of the eye\u2019s outer membrane, often caused by infection or allergy.',symptoms:["Redness in the eye","Itching or burning","Watery or sticky discharge","Sensitivity to light"],causesLabel:"Causes",causes:["Viral or bacterial infection","Allergies","Irritants such as smoke or dust"],preventionLabel:"Prevention",prevention:["Wash hands frequently","Avoid touching or rubbing the eyes","Don't share towels or pillows","Clean discharge gently with a clean cloth"],doctor:"See a doctor if there is severe pain, vision changes, or symptoms don't improve within a few days."},
+"Snake Bite First Aid":{overview:"Snake bites are medical emergencies in many parts of South Asia; prompt, correct first aid improves outcomes while awaiting professional care.",symptoms:["Keep the person calm and still","Immobilize the bitten limb at or below heart level","Remove tight clothing or jewelry near the bite","Get to a hospital immediately for antivenom"],causesLabel:"What NOT To Do",causes:["Do not cut, suck, or apply ice to the wound","Do not apply a tight tourniquet","Do not give the person food, alcohol, or traditional remedies"],preventionLabel:"Prevention",prevention:["Wear boots and use a torch when walking outdoors at night","Avoid tall grass and rock piles","Keep surroundings clear of rodents, which attract snakes"],doctor:"Every snake bite should be treated as an emergency \u2014 go to the nearest hospital immediately, even if symptoms seem mild at first."},
+"Burns First Aid":{overview:"Quick and correct first aid for burns can significantly reduce damage and improve healing.",symptoms:["Cool the burn under running water for 10\u201320 minutes","Remove tight clothing or jewelry near the burn before swelling starts","Cover loosely with a clean, non-stick cloth","Do not burst any blisters"],causesLabel:"What NOT To Do",causes:["Do not apply ice, butter, toothpaste, or other home remedies","Do not use fluffy cotton dressings"],preventionLabel:"Prevention",prevention:["Keep hot liquids and flames away from children","Use safety guards on stoves","Test bath water temperature before use"],doctor:"Seek medical care for large burns, burns on the face, hands, or genitals, or burns that blister severely or show signs of infection."},
+"Sexually Transmitted Infections (STI) Prevention":{overview:"STIs are infections passed primarily through sexual contact; many are preventable and treatable, especially with early testing.",symptoms:["Unusual discharge","Genital sores or itching","Pain during urination","Note: many STIs have no symptoms, so testing is important"],causesLabel:"Common Examples",causes:["Chlamydia, gonorrhoea, and syphilis","HIV","Genital herpes and HPV"],preventionLabel:"Prevention",prevention:["Use condoms consistently and correctly","Limit the number of sexual partners","Get tested regularly if sexually active","Get vaccinated where available, such as the HPV vaccine"],doctor:"See a healthcare provider for testing if you have symptoms, a new partner, or have had unprotected sex."},
+"Heat Stroke & Heat Exhaustion":{overview:"Heat stroke is a serious, potentially life-threatening condition caused by the body overheating, common during heat waves.",symptoms:["Heat exhaustion: heavy sweating, weakness, dizziness, nausea","Heat stroke: high body temperature, confusion, hot dry skin, loss of consciousness"],causesLabel:"Risk Factors",causes:["Prolonged sun exposure","Strenuous outdoor work","Dehydration","Older age and young children are at higher risk"],preventionLabel:"Prevention",prevention:["Stay hydrated","Avoid outdoor activity during peak heat hours","Wear light, loose clothing","Take breaks in shade or cool areas"],doctor:"Heat stroke is a medical emergency \u2014 move the person to a cool place, cool their body, and seek emergency care immediately."},
+"Lower Back Pain":{overview:"Lower back pain is extremely common and usually improves with simple self-care, though persistent pain needs evaluation.",symptoms:["Dull or sharp pain in the lower back","Stiffness","Pain that may radiate to the legs","Difficulty standing straight"],causesLabel:"Causes",causes:["Muscle strain from poor posture or lifting","Prolonged sitting","Weak core muscles","Underlying spine conditions"],preventionLabel:"Prevention & Self-Care",prevention:["Maintain good posture","Use correct lifting technique","Stay active with gentle exercise","Use ergonomic seating"],doctor:"See a doctor if pain is severe, follows an injury, spreads down the leg with numbness, or lasts more than a few weeks."}
+};
+
+// Condensed Hindi / Bangla translations for a subset of flagship topics
+const TRANSLATIONS = {
+"Common Cold":{hi:{overview:"सामान्य सर्दी-जुकाम नाक और गले का एक हल्का वायरल संक्रमण है। ज़्यादातर वयस्क बिना किसी खास इलाज के 7\u201310 दिनों में ठीक हो जाते हैं।",symptoms:["बहती या बंद नाक","गले में खराश","छींक और खांसी","हल्की थकान"],prevention:["साबुन से बार-बार हाथ धोएं","संक्रमित व्यक्ति से दूरी बनाए रखें","खांसते या छींकते समय मुंह ढकें"],doctor:"अगर तेज़ बुखार हो, लक्षण 10 दिनों से ज़्यादा रहें, या सांस लेने में तकलीफ़ हो तो डॉक्टर से मिलें।"},
+bn:{overview:"সাধারণ সর্দি নাক ও গলার একটি হালকা ভাইরাল সংক্রমণ। বেশিরভাগ প্রাপ্তবয়স্ক বিশেষ চিকিৎসা ছাড়াই ৭\u201310 দিনে সেরে ওঠেন।",symptoms:["নাক দিয়ে পানি পড়া বা বন্ধ নাক","গলা ব্যথা","হাঁচি ও কাশি","হালকা ক্লান্তি"],prevention:["সাবান দিয়ে ঘন ঘন হাত ধোয়া","সংক্রমিত ব্যক্তির থেকে দূরত্ব বজায় রাখা","কাশি বা হাঁচির সময় মুখ ঢাকা"],doctor:"তীব্র জ্বর, ১০ দিনের বেশি লক্ষণ থাকলে, বা শ্বাসকষ্ট হলে ডাক্তার দেখান।"}},
+"Dengue Fever":{hi:{overview:"डेंगू मच्छरों से फैलने वाली एक वायरल बीमारी है, जो दक्षिण एशिया में मानसून के दौरान और बाद में आम है।",symptoms:["अचानक तेज़ बुखार","सिरदर्द और आंखों के पीछे दर्द","जोड़ों और मांसपेशियों में दर्द","त्वचा पर चकत्ते"],prevention:["घर के आसपास पानी जमा न होने दें","मच्छरदानी और रिपेलेंट का प्रयोग करें","पूरी बाजू के कपड़े पहनें"],doctor:"पेट में तेज़ दर्द, लगातार उल्टी, रक्तस्राव या सांस लेने में तकलीफ़ होने पर तुरंत डॉक्टर से संपर्क करें।"},
+bn:{overview:"ডেঙ্গু মশাবাহিত একটি ভাইরাল রোগ, যা দক্ষিণ এশিয়ায় বর্ষা মৌসুমে ও তার পরে বেশি দেখা যায়।",symptoms:["হঠাৎ তীব্র জ্বর","মাথাব্যথা ও চোখের পেছনে ব্যথা","গাঁটে ও মাংসপেশিতে ব্যথা","ত্বকে র\u200c্যাশ"],prevention:["বাড়ির আশেপাশে পানি জমতে না দেওয়া","মশারি ও মশা প্রতিরোধক ব্যবহার করা","ফুলহাতা পোশাক পরা"],doctor:"তীব্র পেটব্যথা, ক্রমাগত বমি, রক্তক্ষরণ বা শ্বাসকষ্ট হলে অবিলম্বে ডাক্তারের কাছে যান।"}},
+"Type 2 Diabetes":{hi:{overview:"टाइप 2 डायबिटीज़ एक दीर्घकालिक स्थिति है जिसमें शरीर रक्त शर्करा को ठीक से नियंत्रित नहीं कर पाता। जीवनशैली में बदलाव और दवा से इसे प्रबंधित किया जा सकता है।",symptoms:["अधिक प्यास और बार-बार पेशाब आना","बिना कारण थकान","धुंधला दिखना","घाव धीरे भरना"],prevention:["वजन नियंत्रित रखें","नियमित व्यायाम करें","साबुत अनाज और सब्जियां खाएं","नियमित रूप से शुगर जांच कराएं"],doctor:"लगातार प्यास, थकान या अस्पष्टीकृत वजन परिवर्तन होने पर डॉक्टर से मिलें।"},
+bn:{overview:"টাইপ ২ ডায়াবেটিস একটি দীর্ঘমেয়াদী অবস্থা যেখানে শরীর রক্তে শর্করার মাত্রা ঠিকমতো নিয়ন্ত্রণ করতে পারে না। জীবনযাত্রার পরিবর্তন ও ওষুধের মাধ্যমে এটি নিয়ন্ত্রণ করা যায়।",symptoms:["অতিরিক্ত পিপাসা ও ঘন ঘন প্রস্রাব","অকারণ ক্লান্তি","ঝাপসা দৃষ্টি","ক্ষত ধীরে শুকানো"],prevention:["সুস্থ ওজন বজায় রাখা","নিয়মিত ব্যায়াম করা","পূর্ণ শস্য ও সবজি খাওয়া","নিয়মিত রক্তে শর্করা পরীক্ষা করা"],doctor:"ক্রমাগত পিপাসা, ক্লান্তি বা অস্বাভাবিক ওজন পরিবর্তন হলে ডাক্তার দেখান।"}},
+"Diarrhea in Children":{hi:{overview:"दस्त छोटे बच्चों में बीमारी का एक प्रमुख कारण है, जो अक्सर संक्रमण के कारण होता है और दूषित भोजन या पानी से फैलता है।",symptoms:["बार-बार पतले दस्त","उल्टी","भूख कम लगना","निर्जलीकरण के लक्षण जैसे सूखा मुंह और कम पेशाब"],prevention:["ओआरएस (ORS) और ज़िंक दें","स्तनपान या खिलाना जारी रखें","साबुन से हाथ धोएं","सुरक्षित पेयजल सुनिश्चित करें"],doctor:"मल में खून, लगातार उल्टी, निर्जलीकरण के लक्षण या दस्त कई दिनों तक रहने पर तुरंत डॉक्टर से मिलें।"},
+bn:{overview:"ডায়রিয়া ছোট শিশুদের অসুস্থতার একটি প্রধান কারণ, যা সাধারণত সংক্রমণের ফলে হয় এবং দূষিত খাবার বা পানির মাধ্যমে ছড়ায়।",symptoms:["ঘন ঘন পাতলা পায়খানা","বমি","ক্ষুধামন্দা","পানিশূন্যতার লক্ষণ যেমন শুকনো মুখ ও কম প্রস্রাব"],prevention:["ওআরএস (ORS) ও জিঙ্ক দেওয়া","বুকের দুধ বা খাওয়ানো চালিয়ে যাওয়া","সাবান দিয়ে হাত ধোয়া","নিরাপদ পানীয় জল নিশ্চিত করা"],doctor:"পায়খানায় রক্ত, ক্রমাগত বমি, পানিশূন্যতার লক্ষণ বা কয়েকদিনের বেশি ডায়রিয়া থাকলে দ্রুত ডাক্তার দেখান।"}},
+"Depression":{hi:{overview:"अवसाद एक सामान्य मानसिक स्वास्थ्य स्थिति है जिसमें लगातार उदासी और दैनिक गतिविधियों में रुचि की कमी होती है। सही सहायता से इसका इलाज संभव है।",symptoms:["लगातार उदासी","पहले पसंद आने वाली चीज़ों में रुचि न होना","नींद या भूख में बदलाव","ऊर्जा की कमी"],prevention:["सामाजिक संबंध बनाए रखें","नियमित शारीरिक गतिविधि करें","पर्याप्त नींद लें","जल्दी पेशेवर मदद लें"],doctor:"यदि उदास मनोदशा दो सप्ताह से अधिक रहे और दैनिक जीवन प्रभावित हो, या आत्म-हानि के विचार आएं, तो तुरंत किसी विशेषज्ञ से बात करें।"},
+bn:{overview:"বিষণ্নতা একটি সাধারণ মানসিক স্বাস্থ্য সমস্যা, যেখানে ক্রমাগত মন খারাপ ও দৈনন্দিন কাজে আগ্রহ কমে যায়। সঠিক সহায়তায় এটি চিকিৎসাযোগ্য।",symptoms:["ক্রমাগত মন খারাপ","আগে ভালো লাগত এমন কাজে আগ্রহ না থাকা","ঘুম বা ক্ষুধায় পরিবর্তন","শক্তির অভাব"],prevention:["সামাজিক সম্পর্ক বজায় রাখা","নিয়মিত শারীরিক কার্যকলাপ","পর্যাপ্ত ঘুম","দ্রুত পেশাদার সাহায্য নেওয়া"],doctor:"মন খারাপের ভাব দুই সপ্তাহের বেশি থাকলে ও দৈনন্দিন জীবনে প্রভাব ফেললে, অথবা আত্ম-ক্ষতির চিন্তা এলে অবিলম্বে বিশেষজ্ঞের সাথে কথা বলুন।"}},
+"Hypertension (High Blood Pressure)":{hi:{overview:"उच्च रक्तचाप धमनियों में लगातार बढ़ा हुआ दबाव है। इसके अक्सर कोई लक्षण नहीं होते, लेकिन यह हृदय रोग और स्ट्रोक का एक बड़ा जोखिम कारक है।",symptoms:["आमतौर पर कोई लक्षण नहीं","कभी-कभी सिरदर्द","गंभीर मामलों में चक्कर आना"],prevention:["नमक का सेवन कम करें","नियमित व्यायाम करें","स्वस्थ वजन बनाए रखें","तनाव प्रबंधन करें","नियमित रूप से रक्तचाप जांच कराएं"],doctor:"साल में कम से कम एक बार रक्तचाप जांच कराएं, या रीडिंग लगातार 140/90 mmHg से ऊपर होने पर डॉक्टर से मिलें।"},
+bn:{overview:"উচ্চ রক্তচাপ হলো ধমনীতে ক্রমাগত উচ্চ চাপ। এর প্রায়ই কোনো লক্ষণ থাকে না, তবে এটি হৃদরোগ ও স্ট্রোকের একটি বড় ঝুঁকির কারণ।",symptoms:["সাধারণত কোনো লক্ষণ নেই","মাঝেমধ্যে মাথাব্যথা","গুরুতর ক্ষেত্রে মাথা ঘোরা"],prevention:["লবণ গ্রহণ কমানো","নিয়মিত ব্যায়াম","সুস্থ ওজন বজায় রাখা","মানসিক চাপ নিয়ন্ত্রণ","নিয়মিত রক্তচাপ পরীক্ষা করা"],doctor:"বছরে অন্তত একবার রক্তচাপ পরীক্ষা করুন, অথবা রিডিং ক্রমাগত ১৪০/৯০ mmHg-এর বেশি হলে ডাক্তার দেখান।"}}
+};
+
+const TRUSTED_SOURCES = {
+  general:[["WHO Health Topics","https://www.who.int/health-topics"],["Ministry of Health & Family Welfare, India","https://www.mohfw.gov.in/"],["DGHS, Bangladesh","https://dghs.gov.bd/"],["Ministry of Health, Sri Lanka","https://www.health.gov.lk/home/"]],
+  infectious:[["NCDC, India","https://ncdc.mohfw.gov.in/"],["IEDCR, Bangladesh","https://iedcr.gov.bd/"],["Epidemiology Unit, Sri Lanka","https://www.epid.gov.lk/"],["WHO Fact Sheets","https://www.who.int/news-room/fact-sheets"]],
+  maternal:[["National Health Mission, India","https://nhm.gov.in/"],["WHO Health Topics","https://www.who.int/health-topics"],["DGHS, Bangladesh","https://dghs.gov.bd/"]],
+  child:[["National Health Mission, India","https://nhm.gov.in/"],["WHO Fact Sheets","https://www.who.int/news-room/fact-sheets"],["DGHS, Bangladesh","https://dghs.gov.bd/"]],
+  ncd:[["ICMR, India","https://www.icmr.gov.in/"],["WHO Fact Sheets","https://www.who.int/news-room/fact-sheets"],["Health Promotion Bureau, Sri Lanka","https://hpb.health.gov.lk/"]]
+};
+function sourcesFor(catId){ return TRUSTED_SOURCES[catId] || TRUSTED_SOURCES.general; }
+
+/* ---------- UI strings ---------- */
+const UI = {
+en:{home:"Home",categories:"Categories",search:"Search a health topic\u2026",signout:"Sign out",reviewed:"Reviewed",draft:"Draft",edited:"Edited",edit:"Edit",save:"Save changes",cancel:"Cancel",download:"Download",translate:"Sources",generate:"Generate draft",generating:"Generating\u2026",backToCategories:"Categories",backToHome:"Health Portal",overview:"Overview",symptoms:"Symptoms",whenDoctor:"When to see a doctor",noContentTitle:"No draft written yet",noContentBody:"This topic hasn't been drafted. Generate a starter template, then fill it in against a trusted source before publishing.",langNote:"A Hindi/Bangla translation isn't ready for this article yet. Showing the English version below.",disclaimer:"This is a work-in-progress summary for general information only. It is not medical advice, and should be checked against a trusted source and reviewed by a qualified professional before publishing.",coverage1:"topics reviewed",coverage2:"awaiting draft & review",coverage3:"health categories",heroTitle:"Plain-language health information for India, Sri Lanka & Bangladesh.",heroSub:"Search 1,000 health topics sourced from WHO and national health ministries. Read, edit, translate, and download articles \u2014 every draft is reviewed before it's published.",topics:"topics",noResults:"No topics match your search.",email:"Email address",password:"Password",signin:"Sign in",createacc:"Create account",loginTitle:"Welcome back",loginSub:"Sign in to draft, review and translate health articles.",demoNote:"Prototype demo \u2014 no account is created and nothing is stored.",guest:"Continue as guest"},
+hi:{home:"होम",categories:"श्रेणियां",search:"स्वास्थ्य विषय खोजें\u2026",signout:"साइन आउट",reviewed:"समीक्षित",draft:"मसौदा",edited:"संपादित",edit:"संपादित करें",save:"बदलाव सहेजें",cancel:"रद्द करें",download:"डाउनलोड",translate:"स्रोत",generate:"मसौदा बनाएं",generating:"बन रहा है\u2026",backToCategories:"श्रेणियां",backToHome:"हेल्थ पोर्टल",overview:"सारांश",symptoms:"लक्षण",whenDoctor:"डॉक्टर से कब मिलें",noContentTitle:"अभी कोई मसौदा नहीं लिखा गया",noContentBody:"यह विषय अभी तैयार नहीं हुआ है। एक शुरुआती टेम्पलेट बनाएं, फिर प्रकाशित करने से पहले इसे किसी भरोसेमंद स्रोत के आधार पर भरें।",langNote:"इस लेख का हिंदी अनुवाद अभी तैयार नहीं है। नीचे अंग्रेज़ी संस्करण दिखाया जा रहा है।",disclaimer:"यह केवल सामान्य जानकारी के लिए एक कार्य-प्रगति सारांश है। यह चिकित्सीय सलाह नहीं है, और प्रकाशित करने से पहले इसे किसी भरोसेमंद स्रोत से जांचा और किसी योग्य विशेषज्ञ द्वारा समीक्षा किया जाना चाहिए।",coverage1:"विषय समीक्षित",coverage2:"मसौदे और समीक्षा की प्रतीक्षा में",coverage3:"स्वास्थ्य श्रेणियां",heroTitle:"भारत, श्रीलंका और बांग्लादेश के लिए सरल भाषा में स्वास्थ्य जानकारी।",heroSub:"WHO और राष्ट्रीय स्वास्थ्य मंत्रालयों से लिए गए 1,000 स्वास्थ्य विषय खोजें। लेख पढ़ें, संपादित करें, अनुवाद करें और डाउनलोड करें \u2014 प्रकाशित होने से पहले हर मसौदे की समीक्षा की जाती है।",topics:"विषय",noResults:"आपकी खोज से कोई विषय मेल नहीं खाता।",email:"ईमेल पता",password:"पासवर्ड",signin:"साइन इन करें",createacc:"खाता बनाएं",loginTitle:"वापसी पर स्वागत है",loginSub:"स्वास्थ्य लेख तैयार करने, समीक्षा करने और अनुवाद करने के लिए साइन इन करें।",demoNote:"प्रोटोटाइप डेमो \u2014 कोई खाता नहीं बनाया जाता और कुछ भी सहेजा नहीं जाता।",guest:"गेस्ट के रूप में जारी रखें"},
+bn:{home:"হোম",categories:"বিভাগসমূহ",search:"স্বাস্থ্য বিষয় খুঁজুন\u2026",signout:"সাইন আউট",reviewed:"পর্যালোচিত",draft:"খসড়া",edited:"সম্পাদিত",edit:"সম্পাদনা করুন",save:"পরিবর্তন সংরক্ষণ করুন",cancel:"বাতিল",download:"ডাউনলোড",translate:"উৎস",generate:"খসড়া তৈরি করুন",generating:"তৈরি হচ্ছে\u2026",backToCategories:"বিভাগসমূহ",backToHome:"হেলথ পোর্টাল",overview:"সংক্ষিপ্ত বিবরণ",symptoms:"লক্ষণ",whenDoctor:"কখন ডাক্তার দেখাবেন",noContentTitle:"এখনও কোনো খসড়া লেখা হয়নি",noContentBody:"এই বিষয়ের খসড়া এখনও তৈরি হয়নি। একটি প্রাথমিক টেমপ্লেট তৈরি করুন, তারপর প্রকাশের আগে একটি বিশ্বাসযোগ্য উৎসের ভিত্তিতে তা পূরণ করুন।",langNote:"এই লেখাটির বাংলা অনুবাদ এখনও প্রস্তুত নয়। নিচে ইংরেজি সংস্করণ দেখানো হচ্ছে।",disclaimer:"এটি শুধুমাত্র সাধারণ তথ্যের জন্য একটি চলমান খসড়া সারাংশ। এটি চিকিৎসা পরামর্শ নয়, এবং প্রকাশের আগে একটি বিশ্বাসযোগ্য উৎসের সাথে যাচাই ও একজন যোগ্য বিশেষজ্ঞের দ্বারা পর্যালোচনা করা উচিত।",coverage1:"বিষয় পর্যালোচিত",coverage2:"খসড়া ও পর্যালোচনার অপেক্ষায়",coverage3:"স্বাস্থ্য বিভাগ",heroTitle:"ভারত, শ্রীলঙ্কা ও বাংলাদেশের জন্য সহজ ভাষায় স্বাস্থ্য তথ্য।",heroSub:"WHO ও জাতীয় স্বাস্থ্য মন্ত্রণালয় থেকে সংগৃহীত ১,০০০টি স্বাস্থ্য বিষয় খুঁজুন। লেখা পড়ুন, সম্পাদনা করুন, অনুবাদ করুন ও ডাউনলোড করুন \u2014 প্রকাশের আগে প্রতিটি খসড়া পর্যালোচনা করা হয়।",topics:"বিষয়",noResults:"আপনার অনুসন্ধানের সাথে কোনো বিষয় মেলেনি।",email:"ইমেইল ঠিকানা",password:"পাসওয়ার্ড",signin:"সাইন ইন করুন",createacc:"অ্যাকাউন্ট তৈরি করুন",loginTitle:"আবার স্বাগতম",loginSub:"স্বাস্থ্য নিবন্ধ খসড়া, পর্যালোচনা ও অনুবাদ করতে সাইন ইন করুন।",demoNote:"প্রোটোটাইপ ডেমো \u2014 কোনো অ্যাকাউন্ট তৈরি হয় না এবং কিছু সংরক্ষিত হয় না।",guest:"গেস্ট হিসেবে চালিয়ে যান"}
+};
+
+/* ======================= STATE ======================= */
+const state = {
+  authed:false,
+  lang:'en',
+  view:'home',       // home | category | article
+  categoryId:null,
+  topicId:null,
+  query:'',
+  loginTab:'signin',
+  edits:{}           // topicId -> {text, ts}
+};
+
+let TOPICS = [];
+CATEGORIES.forEach(cat=>{
+  (TOPIC_LISTS[cat.id]||[]).forEach((title,i)=>{
+    TOPICS.push({id:cat.id+'-'+i, title, categoryId:cat.id, hasContent: !!FLAGSHIP[title]});
+  });
+});
+
+function t(key){ return UI[state.lang][key]; }
+function catById(id){ return CATEGORIES.find(c=>c.id===id); }
+function topicById(id){ return TOPICS.find(t=>t.id===id); }
+function initials(title){ return title.trim().charAt(0).toUpperCase(); }
+
+function generatePlaceholder(title, lang){
+  const T = {
+    en:{ov:`Add a plain-language overview of ${title} here, based on a trusted source.`,
+         sy:[`List the most common symptoms of ${title}`,`Note any warning signs that need urgent care`],
+         pv:[`List key prevention or self-care steps`,`Note any vaccination or screening relevant to ${title}`],
+         dr:`Describe when a reader should see a health worker or doctor about ${title}.`},
+    hi:{ov:`यहाँ ${title} के बारे में एक भरोसेमंद स्रोत के आधार पर सरल भाषा में जानकारी जोड़ें।`,
+         sy:[`${title} के सामान्य लक्षणों की सूची बनाएं`,`तुरंत चिकित्सा सहायता की आवश्यकता वाले चेतावनी संकेत नोट करें`],
+         pv:[`मुख्य रोकथाम या स्व-देखभाल के उपाय सूचीबद्ध करें`,`${title} से संबंधित कोई टीकाकरण या जांच नोट करें`],
+         dr:`बताएं कि पाठक को ${title} के लिए कब स्वास्थ्यकर्मी या डॉक्टर से मिलना चाहिए।`},
+    bn:{ov:`এখানে বিশ্বাসযোগ্য উৎসের ভিত্তিতে ${title} সম্পর্কে সহজ ভাষায় একটি সংক্ষিপ্ত বিবরণ যোগ করুন।`,
+         sy:[`${title}-এর সাধারণ লক্ষণগুলোর তালিকা করুন`,`জরুরি চিকিৎসার প্রয়োজন এমন সতর্কতা চিহ্ন উল্লেখ করুন`],
+         pv:[`মূল প্রতিরোধ বা স্ব-যত্নের পদক্ষেপগুলো তালিকাভুক্ত করুন`,`${title}-এর সাথে সম্পর্কিত কোনো টিকা বা স্ক্রিনিং উল্লেখ করুন`],
+         dr:`${title}-এর জন্য কখন একজন স্বাস্থ্যকর্মী বা ডাক্তারের কাছে যাওয়া উচিত তা বর্ণনা করুন।`}
+  };
+  const x = T[lang]||T.en;
+  return {overview:x.ov, symptoms:x.sy, causesLabel:null, causes:[], preventionLabel:t('symptoms')===undefined?'Prevention':'Prevention', prevention:x.pv, doctor:x.dr};
+}
+
+/* ======================= RENDER ======================= */
+const root = document.getElementById('app');
+
+function render(){
+  root.innerHTML = '';
+  if(!state.authed){ root.appendChild(renderLogin()); return; }
+  root.appendChild(renderAppShell());
+}
+
+/* ---------- Login ---------- */
+function renderLogin(){
+  const wrap = el('div','login-wrap');
+
+  const topbar = el('div','login-topbar');
+  const brand = el('div','brand'); brand.innerHTML = `<span class="dot"></span><span class="brand-name">Health Portal</span>`;
+  const pills = el('div','lang-pills');
+  ['en','hi','bn'].forEach(l=>{
+    const b = el('button','lang-pill'+(state.lang===l?' active':'')); b.textContent = l.toUpperCase();
+    b.onclick = ()=>{ state.lang=l; render(); };
+    pills.appendChild(b);
+  });
+  topbar.appendChild(brand); topbar.appendChild(pills);
+  wrap.appendChild(topbar);
+
+  const card = el('div','login-card');
+  const tabrow = el('div','tabrow');
+  const tabSignin = el('button','tabbtn'+(state.loginTab==='signin'?' active':'')); tabSignin.textContent = t('signin');
+  const tabCreate = el('button','tabbtn'+(state.loginTab==='create'?' active':'')); tabCreate.textContent = t('createacc');
+  tabSignin.onclick=()=>{state.loginTab='signin';render();};
+  tabCreate.onclick=()=>{state.loginTab='create';render();};
+  tabrow.appendChild(tabSignin); tabrow.appendChild(tabCreate);
+
+  const h1 = el('h1'); h1.textContent = t('loginTitle');
+  const sub = el('p','login-sub'); sub.textContent = t('loginSub');
+
+  const fEmail = fieldInput(t('email'),'email','you@example.com');
+  const fPass = fieldInput(t('password'),'password','\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022');
+
+  const btn = el('button','btn-primary'); btn.textContent = t('signin');
+  btn.onclick = (e)=>{ e.preventDefault(); state.authed=true; state.view='home'; render(); };
+
+  const guest = el('button','btn-ghost'); guest.textContent = t('guest');
+  guest.onclick = (e)=>{ e.preventDefault(); state.authed=true; state.view='home'; render(); };
+
+  const note = el('div','login-note'); note.innerHTML = `<b>${state.lang==='en'?'Note:':state.lang==='hi'?'नोट:':'নোট:'}</b> ${t('demoNote')}`;
+
+  card.appendChild(tabrow); card.appendChild(h1); card.appendChild(sub);
+  card.appendChild(fEmail); card.appendChild(fPass);
+  card.appendChild(btn); card.appendChild(guest); card.appendChild(note);
+  wrap.appendChild(card);
+  return wrap;
+}
+function fieldInput(label,type,placeholder){
+  const f = el('div','field');
+  const l = el('label'); l.textContent = label;
+  const i = document.createElement('input'); i.type=type; i.placeholder=placeholder;
+  f.appendChild(l); f.appendChild(i);
+  return f;
+}
+
+/* ---------- App shell ---------- */
+function renderAppShell(){
+  const wrap = el('div');
+  wrap.appendChild(renderTopbar());
+  const shell = el('div','shell');
+  shell.appendChild(renderSidebar());
+  const main = el('div','main');
+  if(state.view==='home') main.appendChild(renderHome());
+  else if(state.view==='category') main.appendChild(renderCategory());
+  else if(state.view==='article') main.appendChild(renderArticle());
+  shell.appendChild(main);
+  wrap.appendChild(shell);
+  return wrap;
+}
+
+function renderTopbar(){
+  const bar = el('div','topbar');
+  const brand = el('div','brand');
+  brand.style.cursor='pointer';
+  brand.innerHTML = `<span class="dot"></span><span class="brand-name">Health Portal</span>`;
+  brand.onclick = ()=>{ state.view='home'; state.query=''; render(); };
+  bar.appendChild(brand);
+
+  const search = el('div','search-wrap');
+  search.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
+  const input = document.createElement('input'); input.placeholder = t('search'); input.value = state.query;
+  input.oninput = (e)=>{ state.query = e.target.value; state.view='search'; renderInto(); };
+  search.appendChild(input);
+  bar.appendChild(search);
+
+  const right = el('div','topbar-right');
+  const pills = el('div','lang-pills');
+  ['en','hi','bn'].forEach(l=>{
+    const b = el('button','lang-pill'+(state.lang===l?' active':'')); b.textContent = l.toUpperCase();
+    b.onclick = ()=>{ state.lang=l; render(); };
+    pills.appendChild(b);
+  });
+  right.appendChild(pills);
+
+  const user = el('div','user-chip');
+  user.innerHTML = `<span class="user-avatar">${'J'}</span><span class="user-name">John</span>`;
+  right.appendChild(user);
+
+  const signout = el('button','icon-btn'); signout.textContent = t('signout');
+  signout.onclick = ()=>{ state.authed=false; state.view='home'; render(); };
+  right.appendChild(signout);
+
+  bar.appendChild(right);
+  return bar;
+}
+
+function renderSidebar(){
+  const side = el('div','sidebar');
+  const t1 = el('div','side-title'); t1.textContent = t('categories');
+  side.appendChild(t1);
+
+  const homeLink = el('button','side-link'+(state.view==='home'?' active':''));
+  homeLink.innerHTML = `<span class="swatch" style="background:var(--blue-700)"></span>${t('home')}`;
+  homeLink.onclick = ()=>{ state.view='home'; render(); };
+  side.appendChild(homeLink);
+
+  CATEGORIES.forEach(cat=>{
+    const link = el('button','side-link'+(state.view!=='home'&&state.categoryId===cat.id?' active':''));
+    const color = cat.color==='blue'?'var(--blue-700)':'var(--green-700)';
+    link.innerHTML = `<span class="swatch" style="background:${color}"></span>${cat.name[state.lang]}<span class="count">${(TOPIC_LISTS[cat.id]||[]).length}</span>`;
+    link.onclick = ()=>{ state.view='category'; state.categoryId=cat.id; render(); };
+    side.appendChild(link);
+  });
+  return side;
+}
+
+/* ---------- Home ---------- */
+function renderHome(){
+  const wrap = el('div');
+
+  const hero = el('div','hero');
+  const eyebrow = el('div','hero-eyebrow'); eyebrow.textContent = 'HEALTH PORTAL \u00b7 PROTOTYPE';
+  const h1 = el('h1'); h1.textContent = t('heroTitle');
+  const p = el('p'); p.textContent = t('heroSub');
+  const reviewedCount = Object.keys(FLAGSHIP).length;
+  const cov = el('div','coverage');
+  cov.appendChild(covItem(reviewedCount, t('coverage1')));
+  cov.appendChild(covItem(TOPICS.length-reviewedCount, t('coverage2')));
+  cov.appendChild(covItem(CATEGORIES.length, t('coverage3')));
+  hero.appendChild(eyebrow); hero.appendChild(h1); hero.appendChild(p); hero.appendChild(cov);
+  wrap.appendChild(hero);
+
+  if(state.view==='search' || state.query){
+    wrap.appendChild(renderSearchResults());
+    return wrap;
+  }
+
+  const head = el('div','section-head');
+  const h2 = el('h2'); h2.textContent = t('categories');
+  const sub = el('div','sub'); sub.textContent = TOPICS.length + ' ' + t('topics');
+  head.appendChild(h2); head.appendChild(sub);
+  wrap.appendChild(head);
+
+  const grid = el('div','cat-grid');
+  CATEGORIES.forEach(cat=>{
+    const card = el('button','cat-card');
+    const seal = el('div','seal '+cat.color);
+    seal.innerHTML = `<span>${initials(cat.name.en)}</span>`;
+    const body = el('div');
+    const title = el('div','cat-title'); title.textContent = cat.name[state.lang];
+    const desc = el('div','cat-desc'); desc.textContent = cat.desc[state.lang];
+    const reviewedInCat = (TOPIC_LISTS[cat.id]||[]).filter(x=>FLAGSHIP[x]).length;
+    const meta = el('div','cat-meta'); meta.innerHTML = `${(TOPIC_LISTS[cat.id]||[]).length} ${t('topics')} \u00b7 <b>${reviewedInCat} ${t('reviewed').toLowerCase()}</b>`;
+    body.appendChild(title); body.appendChild(desc); body.appendChild(meta);
+    card.appendChild(seal); card.appendChild(body);
+    card.onclick = ()=>{ state.view='category'; state.categoryId=cat.id; render(); };
+    grid.appendChild(card);
+  });
+  wrap.appendChild(grid);
+  return wrap;
+}
+function covItem(num,lbl){
+  const d = el('div','coverage-item');
+  d.innerHTML = `<div class="num">${num}</div><div class="lbl">${lbl}</div>`;
+  return d;
+}
+
+function renderSearchResults(){
+  const wrap = el('div');
+  const q = state.query.trim().toLowerCase();
+  const results = q ? TOPICS.filter(x=>x.title.toLowerCase().includes(q)) : [];
+  const head = el('div','section-head');
+  const h2 = el('h2'); h2.textContent = state.lang==='en'?`Results for \u201c${state.query}\u201d`: state.lang==='hi'?`\u201c${state.query}\u201d के लिए परिणाम`:`\u201c${state.query}\u201d এর ফলাফল`;
+  head.appendChild(h2);
+  wrap.appendChild(head);
+  if(results.length===0){
+    const p = el('p'); p.style.color='var(--muted)'; p.style.fontSize='13.5px'; p.textContent = t('noResults');
+    wrap.appendChild(p);
+    return wrap;
+  }
+  wrap.appendChild(topicGrid(results));
+  return wrap;
+}
+
+/* ---------- Category ---------- */
+function renderCategory(){
+  const cat = catById(state.categoryId);
+  const wrap = el('div');
+  const crumbs = el('div','crumbs');
+  const backBtn = el('button'); backBtn.textContent = t('backToHome'); backBtn.onclick=()=>{state.view='home';render();};
+  crumbs.appendChild(backBtn);
+  crumbs.appendChild(document.createTextNode('  /  '+cat.name[state.lang]));
+  wrap.appendChild(crumbs);
+
+  const pt = el('div','page-title');
+  const seal = el('div','seal '+cat.color); seal.style.width='40px'; seal.style.height='40px'; seal.style.fontSize='14px';
+  seal.innerHTML = `<span>${initials(cat.name.en)}</span>`;
+  const h1 = el('h1'); h1.textContent = cat.name[state.lang];
+  pt.appendChild(seal); pt.appendChild(h1);
+  wrap.appendChild(pt);
+
+  const sub = el('div','page-sub'); sub.textContent = cat.desc[state.lang];
+  wrap.appendChild(sub);
+
+  const topics = TOPICS.filter(x=>x.categoryId===cat.id);
+  wrap.appendChild(topicGrid(topics));
+  return wrap;
+}
+
+function topicGrid(topics){
+  const grid = el('div','topic-grid');
+  topics.forEach(topic=>{
+    const card = el('button','topic-card');
+    const edited = state.edits[topic.id];
+    const badge = el('span','badge '+(edited?'edited':(topic.hasContent?'reviewed':'draft')));
+    badge.textContent = edited ? t('edited') : (topic.hasContent ? t('reviewed') : t('draft'));
+    const title = el('div','t-title'); title.textContent = topic.title;
+    const excerpt = el('div','t-excerpt');
+    excerpt.textContent = topic.hasContent ? (FLAGSHIP[topic.title].overview.slice(0,90)+'\u2026') : (state.lang==='en'?'Not yet drafted.':state.lang==='hi'?'अभी मसौदा तैयार नहीं है।':'এখনও খসড়া তৈরি হয়নি।');
+    card.appendChild(badge); card.appendChild(title); card.appendChild(excerpt);
+    card.onclick = ()=>{ state.view='article'; state.topicId=topic.id; render(); };
+    grid.appendChild(card);
+  });
+  return grid;
+}
+
+/* ---------- Article ---------- */
+function renderArticle(){
+  const topic = topicById(state.topicId);
+  const cat = catById(topic.categoryId);
+  const wrap = el('div','article-wrap');
+
+  const crumbs = el('div','crumbs');
+  const b1 = el('button'); b1.textContent = t('backToHome'); b1.onclick=()=>{state.view='home';render();};
+  const b2 = el('button'); b2.textContent = cat.name[state.lang]; b2.onclick=()=>{state.view='category';state.categoryId=cat.id;render();};
+  crumbs.appendChild(b1); crumbs.appendChild(document.createTextNode('  /  ')); crumbs.appendChild(b2);
+  wrap.appendChild(crumbs);
+
+  const head = el('div','article-head');
+  const h1 = el('h1','article-title'); h1.textContent = topic.title;
+  head.appendChild(h1);
+
+  const actions = el('div','article-actions');
+  const edited = state.edits[topic.id];
+
+  if(!edited){
+    const editBtn = el('button','abtn'); editBtn.innerHTML = `\u270e ${t('edit')}`;
+    editBtn.onclick = ()=>{ state.editing = true; renderInto(); };
+    actions.appendChild(editBtn);
+  } else {
+    const resetBtn = el('button','abtn'); resetBtn.textContent = state.lang==='en'?'Reset to draft':state.lang==='hi'?'मसौदे पर वापस जाएं':'খসড়ায় ফিরুন';
+    resetBtn.onclick = ()=>{ delete state.edits[topic.id]; render(); };
+    actions.appendChild(resetBtn);
+  }
+  const dlBtn = el('button','abtn primary'); dlBtn.innerHTML = `\u2b07 ${t('download')}`;
+  dlBtn.onclick = ()=>downloadArticle(topic);
+  actions.appendChild(dlBtn);
+  head.appendChild(actions);
+  wrap.appendChild(head);
+
+  const disc = el('div','disclaimer'); disc.textContent = t('disclaimer');
+  wrap.appendChild(disc);
+
+  if(state.editing){
+    wrap.appendChild(renderEditBox(topic));
+    return wrap;
+  }
+
+  if(edited){
+    const body = el('div','article-body');
+    const pre = document.createElement('pre');
+    pre.style.whiteSpace='pre-wrap'; pre.style.fontFamily="'Source Sans 3'"; pre.style.fontSize='14.8px'; pre.style.lineHeight='1.75'; pre.style.margin='0';
+    pre.textContent = edited.text;
+    body.appendChild(pre);
+    wrap.appendChild(body);
+    wrap.appendChild(sourcesBox(cat));
+    return wrap;
+  }
+
+  if(!topic.hasContent){
+    wrap.appendChild(genBox(topic));
+    return wrap;
+  }
+
+  let data = FLAGSHIP[topic.title];
+  let showingFallback = false;
+  if(state.lang!=='en'){
+    const tr = TRANSLATIONS[topic.title];
+    if(tr && tr[state.lang]){
+      data = {overview:tr[state.lang].overview, symptoms:tr[state.lang].symptoms, causesLabel:null, causes:[], preventionLabel:null, prevention:tr[state.lang].prevention, doctor:tr[state.lang].doctor};
+    } else {
+      showingFallback = true;
+    }
+  }
+
+  if(showingFallback){
+    const note = el('div','lang-note'); note.textContent = t('langNote');
+    wrap.appendChild(note);
+  }
+
+  wrap.appendChild(articleBody(data));
+  wrap.appendChild(sourcesBox(cat));
+  return wrap;
+}
+
+function articleBody(data){
+  const body = el('div','article-body');
+
+  const ov = el('div','a-block');
+  ov.innerHTML = `<h3>${t('overview')}</h3><p>${escapeHtml(data.overview)}</p>`;
+  body.appendChild(ov);
+
+  const sy = el('div','a-block');
+  sy.innerHTML = `<h3>${t('symptoms')}</h3><ul>${data.symptoms.map(s=>`<li>${escapeHtml(s)}</li>`).join('')}</ul>`;
+  body.appendChild(sy);
+
+  if(data.causes && data.causes.length){
+    const cz = el('div','a-block');
+    cz.innerHTML = `<h3>${escapeHtml(data.causesLabel||'Causes')}</h3><ul>${data.causes.map(s=>`<li>${escapeHtml(s)}</li>`).join('')}</ul>`;
+    body.appendChild(cz);
+  }
+
+  const pv = el('div','a-block');
+  pv.innerHTML = `<h3>${escapeHtml(data.preventionLabel||'Prevention')}</h3><ul>${data.prevention.map(s=>`<li>${escapeHtml(s)}</li>`).join('')}</ul>`;
+  body.appendChild(pv);
+
+  const dr = el('div','a-block');
+  dr.innerHTML = `<h3>${t('whenDoctor')}</h3><p>${escapeHtml(data.doctor)}</p>`;
+  body.appendChild(dr);
+
+  return body;
+}
+
+function sourcesBox(cat){
+  const box = el('div','sources-box');
+  const h4 = el('h4'); h4.textContent = state.lang==='en'?'Suggested sources to verify against':state.lang==='hi'?'सत्यापन के लिए सुझाए गए स्रोत':'যাচাইয়ের জন্য প্রস্তাবিত উৎস';
+  box.appendChild(h4);
+  const ul = el('ul');
+  sourcesFor(cat.id).forEach(([name,url])=>{
+    const li = document.createElement('li');
+    li.innerHTML = `<a href="${url}" target="_blank" rel="noopener">${name}</a>`;
+    ul.appendChild(li);
+  });
+  box.appendChild(ul);
+  return box;
+}
+
+function genBox(topic){
+  const box = el('div','gen-box');
+  const seal = el('div','seal blue'); seal.style.margin='0 auto 14px'; seal.innerHTML = `<span>${initials(topic.title)}</span>`;
+  const h3 = el('h3'); h3.style.margin='0'; h3.style.color='var(--blue-900)'; h3.style.fontSize='16px'; h3.textContent = t('noContentTitle');
+  const p = el('p'); p.textContent = t('noContentBody');
+  const btn = el('button','abtn primary'); btn.style.width='auto'; btn.style.padding='10px 20px'; btn.innerHTML = `\u2728 ${t('generate')}`;
+  btn.onclick = ()=>{
+    btn.textContent = t('generating');
+    btn.disabled = true;
+    setTimeout(()=>{
+      const ph = generatePlaceholder(topic.title, state.lang);
+      const text = renderPlaceholderAsText(topic.title, ph);
+      state.edits[topic.id] = {text, ts:Date.now()};
+      render();
+    }, 550);
+  };
+  box.appendChild(seal); box.appendChild(h3); box.appendChild(p); box.appendChild(btn);
+  return box;
+}
+
+function renderPlaceholderAsText(title, ph){
+  const L = UI[state.lang];
+  return `${title}\n${'\u2014'.repeat(Math.min(40,title.length))}\n\n${L.overview}:\n${ph.overview}\n\n${L.symptoms}:\n- ${ph.symptoms.join('\n- ')}\n\nPrevention:\n- ${ph.prevention.join('\n- ')}\n\n${L.whenDoctor}:\n${ph.doctor}`;
+}
+
+function renderEditBox(topic){
+  const wrap = el('div');
+  const existingText = state.edits[topic.id] ? state.edits[topic.id].text : articleAsPlainText(topic);
+  const ta = document.createElement('textarea'); ta.className='edit-area'; ta.value = existingText;
+  wrap.appendChild(ta);
+  const actions = el('div','edit-actions');
+  const save = el('button','abtn primary'); save.textContent = t('save');
+  save.onclick = ()=>{ state.edits[topic.id] = {text: ta.value, ts:Date.now()}; state.editing=false; render(); };
+  const cancel = el('button','abtn'); cancel.textContent = t('cancel');
+  cancel.onclick = ()=>{ state.editing=false; render(); };
+  actions.appendChild(save); actions.appendChild(cancel);
+  wrap.appendChild(actions);
+  return wrap;
+}
+
+function articleAsPlainText(topic){
+  if(!topic.hasContent){
+    const ph = generatePlaceholder(topic.title, state.lang);
+    return renderPlaceholderAsText(topic.title, ph);
+  }
+  const data = FLAGSHIP[topic.title];
+  const L = UI[state.lang];
+  return `${topic.title}\n\n${L.overview}:\n${data.overview}\n\n${L.symptoms}:\n- ${data.symptoms.join('\n- ')}\n\n${data.causesLabel||'Causes'}:\n- ${(data.causes||[]).join('\n- ')}\n\n${data.preventionLabel||'Prevention'}:\n- ${data.prevention.join('\n- ')}\n\n${L.whenDoctor}:\n${data.doctor}`;
+}
+
+function downloadArticle(topic){
+  const text = state.edits[topic.id] ? state.edits[topic.id].text : articleAsPlainText(topic);
+  const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = topic.title.replace(/[^a-z0-9]+/gi,'_')+'_'+state.lang+'.txt';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* ---------- helpers ---------- */
+function el(tag,cls){ const e = document.createElement(tag||'div'); if(cls) e.className = cls; return e; }
+function escapeHtml(s){ return (s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// Lightweight re-render that preserves scroll where possible (used for live search typing)
+function renderInto(){
+  const activeTag = document.activeElement ? document.activeElement.tagName : null;
+  const wasSearchFocused = activeTag==='INPUT' && document.activeElement.closest('.search-wrap');
+  const caret = wasSearchFocused ? document.activeElement.selectionStart : null;
+  render();
+  if(wasSearchFocused){
+    const input = document.querySelector('.search-wrap input');
+    if(input){ input.focus(); if(caret!=null) input.setSelectionRange(caret,caret); }
+  }
+}
+
+render();
+</script>
+</body>
+</html>
